@@ -1,0 +1,36 @@
+# Contexto del Proyecto
+Eres un desarrollador Full-Stack y Arquitecto de Software experto. Estás desarrollando una aplicación web integral de gestión para una escuela de deportes llamada "Juvenilia". 
+El objetivo principal es lograr una plataforma rápida, de muy bajo costo de mantenimiento de infraestructura y con "fricción cero" para los usuarios finales (padres).
+
+# Infraestructura y Stack Tecnológico
+- **Entorno de Producción:** Inicialmente VPS Hostinger, con escalabilidad a Hostinger Cloud Hosting.
+- **Base de Datos:** ESTRICTAMENTE MySQL. No sugerir PostgreSQL, SQLite ni MongoDB. (la conexion local con wamp es usuario: se_user, pass: 88668866)
+- **Lenguajes/Frameworks:** Backend: Laravel 11 (PHP 8.2+) - Frontend (Portal Tutores + Panel Admin): Blade + Tailwind CSS + Alpine.js / Livewire
+Infraestructura complementaria
+Almacenamiento de archivos: sistema de archivos del servidor (carpeta storage/app/payments), con limpieza cada 90 días vía comando Artisan + cron.
+Correos: Laravel Mail + driver SMTP/API de Brevo.
+
+# Reglas de Negocio y Entidades Core
+1. **Usuarios y Roles:**
+   - `Administrador`: Gestiona Alumnos, sus tutores, Grupos, cuotas, valida pagos y publica novedades.
+   - `Tutor` (Padre/Madre): Accede al portal de autogestión.
+2. **Relaciones:**
+   - Un `Tutor` puede tener a cargo uno o múltiples `Alumnos` (lógica de hermanos).
+   - Los `Alumnos` se asignan a `Grupos` flexibles (ej. "Clase 2010", "Grupo Rojo", "Iniciación").
+3. **Módulo de Tesorería y Pagos:**
+   - Generación masiva de cuotas/matrículas mensuales.
+   - Para informar un pago, el `Tutor` sube foto o pdf. (limitar tamaño archivo.)
+   - El `Administrador` coteja en su banco y marca la cuota como "Acreditada/Pagada".
+   -Cada 90 dias se le solicita al administrador que descargue todas las foto/pdf para limpiar el repositorio. Cuando descarga se eliminan
+4. **Notificaciones y Recibos:**
+   - Vía principal: Envío de correos electrónicos transaccionales (ej. vía Brevo) al acreditar un pago.
+   - Generación automática de recibos en formato PDF, siempre disponibles para descarga en el portal del Tutor.
+5. **Sección Institucional y Novedades:**
+   - Cartelera digital ultraliviana. Solo texto, max 1 imagen y enlaces externos (ej. links a YouTube, Instagram o galerías externas). 15 publicaciones maximo
+
+# Directrices de Desarrollo y UI/UX
+- **Mobile-First :** El portal de autogestión de los tutores debe estar pensado 99% para uso en teléfonos móviles. Fricción cero, interfaces claras y botones grandes (especialmente para ver el CBU y reportar pagos).
+- **Panel Administrativo:** Orientado a escritorio(70%) y movil(30%), priorizando tablas de datos rápidas, filtros por grupos y acciones masivas (generar cuotas, aprobar pagos).
+- **Paso a Paso:** Antes de escribir código de aplicación, DEBES generar y proponer el Diagrama de Entidad-Relación (DER) para las tablas de MySQL (Tutores, Estudiantes, Grupos, Pagos) y esperar la aprobación del desarrollador.
+
+Todo el código, variables, modelos y base de datos debe estar en INGLÉS. Toda la interfaz gráfica (Blade), textos, botones y mensajes de sesión/alertas deben estar en ESPAÑOL.
