@@ -18,6 +18,11 @@ class Tutor extends Model
         'phone_alt',
         'address',
         'notes',
+        'wallet_balance',
+    ];
+
+    protected $casts = [
+        'wallet_balance' => 'decimal:2',
     ];
 
     public function user()

@@ -21,6 +21,7 @@ class StudentsPage extends Component
     public string $birth_date = '';
     public ?string $gender = null;
     public bool $is_active = true;
+    public int $scholarship_percentage = 0;
     public ?int $group_id = null;
 
     public string $tutor_search = '';
@@ -75,6 +76,7 @@ class StudentsPage extends Component
         $this->birth_date = $student->birth_date ? date('Y-m-d', strtotime((string) $student->birth_date)) : '';
         $this->gender = $student->gender;
         $this->is_active = (bool) $student->is_active;
+        $this->scholarship_percentage = (int) ($student->scholarship_percentage ?? 0);
         $this->group_id = $student->groups->first()->id ?? null;
         $this->selected_tutor_id = $student->tutors->first()->id ?? null;
         $this->show_new_tutor = false;
@@ -95,6 +97,7 @@ class StudentsPage extends Component
             'birth_date' => ['required', 'date'],
             'gender' => ['nullable', 'in:male,female,other'],
             'is_active' => ['boolean'],
+            'scholarship_percentage' => ['required', 'integer', 'min:0', 'max:100'],
             'group_id' => ['required', 'integer', 'exists:groups,id'],
         ]);
 
@@ -146,6 +149,7 @@ class StudentsPage extends Component
                 'birth_date' => $this->birth_date,
                 'gender' => $this->gender,
                 'is_active' => $this->is_active,
+                'scholarship_percentage' => $this->scholarship_percentage,
             ];
 
             if ($this->editing) {
@@ -190,6 +194,7 @@ class StudentsPage extends Component
         $this->birth_date = '';
         $this->gender = null;
         $this->is_active = true;
+        $this->scholarship_percentage = 0;
         $this->group_id = null;
         $this->tutor_search = '';
         $this->selected_tutor_id = null;

@@ -59,6 +59,10 @@ class GeneradorCuotasMasivo extends Component
         $omitidas = 0;
 
         foreach ($alumnos as $alumno) {
+            $percentage = (int) ($alumno->scholarship_percentage ?? 0);
+            $percentage = max(0, min(100, $percentage));
+            $amount = round($monto * (1 - $percentage / 100), 2);
+
             $fee = Fee::firstOrCreate(
                 [
                     'student_id' => $alumno->id,
@@ -67,7 +71,8 @@ class GeneradorCuotasMasivo extends Component
                 [
                     'group_id' => $this->grupo_id ?: $alumno->groups->first(fn ($g) => (bool) $g->pivot?->is_current)?->id,
                     'type' => 'tuition',
-                    'amount' => $monto,
+                    'amount' => $amount,
+                    'paid_amount' => 0,
                     'due_date' => $vencimiento,
                     'status' => 'pending',
                     'issued_at' => now(),

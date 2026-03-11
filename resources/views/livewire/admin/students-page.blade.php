@@ -66,7 +66,14 @@
                         @error('group_id') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="flex items-center gap-2 mt-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Beca (%)</label>
+                        <input type="number" min="0" max="100" wire:model.defer="scholarship_percentage" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                        <p class="text-[11px] text-gray-500 mt-1">0 = sin beca, 100 = gratis.</p>
+                        @error('scholarship_percentage') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="flex items-center gap-2 mt-6 md:col-span-2">
                         <input id="is_active" type="checkbox" wire:model.defer="is_active" class="rounded border border-gray-300">
                         <label for="is_active" class="text-sm text-gray-700">Alumno activo</label>
                     </div>

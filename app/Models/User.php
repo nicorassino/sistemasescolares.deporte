@@ -55,6 +55,11 @@ class User extends Authenticatable
         return $this->hasOne(Tutor::class);
     }
 
+    public function teacher()
+    {
+        return $this->hasOne(Teacher::class);
+    }
+
     public function notifications()
     {
         return $this->hasMany(Notification::class);

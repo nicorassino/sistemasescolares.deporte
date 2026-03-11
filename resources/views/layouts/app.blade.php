@@ -19,7 +19,11 @@
                 <nav class="flex flex-wrap gap-3 text-sm">
                     <a href="{{ route('admin.groups') }}" class="text-gray-700 hover:text-blue-600">Grupos</a>
                     <a href="{{ route('admin.students') }}" class="text-gray-700 hover:text-blue-600">Alumnos</a>
+                    <a href="{{ route('admin.teachers') }}" class="text-gray-700 hover:text-blue-600">Profesores</a>
+                    <a href="{{ route('admin.announcements') }}" class="text-gray-700 hover:text-blue-600">Novedades</a>
                     <a href="{{ route('admin.fees.generate') }}" class="text-gray-700 hover:text-blue-600">Generar cuotas</a>
+                    <a href="{{ route('admin.treasury') }}" class="text-gray-700 hover:text-blue-600">Tesorería</a>
+                    <a href="{{ route('admin.fee-manager') }}" class="text-gray-700 hover:text-blue-600">Deudas</a>
                 </nav>
             </div>
         </header>

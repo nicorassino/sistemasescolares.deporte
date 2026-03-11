@@ -17,11 +17,13 @@ class Student extends Model
         'gender',
         'is_active',
         'notes',
+        'scholarship_percentage',
     ];
 
     protected $casts = [
         'birth_date' => 'date',
         'is_active' => 'boolean',
+        'scholarship_percentage' => 'integer',
     ];
 
     public function tutors()
@@ -41,6 +43,11 @@ class Student extends Model
     public function fees()
     {
         return $this->hasMany(Fee::class);
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
     }
 }
 

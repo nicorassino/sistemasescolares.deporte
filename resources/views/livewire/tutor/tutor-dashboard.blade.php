@@ -1,66 +1,144 @@
 <div class="px-3 py-4 max-w-2xl mx-auto">
-    <h1 class="text-xl font-semibold text-gray-900 mb-3">Hola, {{ $tutor?->first_name }} {{ $tutor?->last_name }}</h1>
-    <p class="text-sm text-gray-600 mb-4">Desde aquí podés ver las cuotas pendientes y reportar tus pagos.</p>
+    <h1 class="text-xl font-semibold text-gray-900 mb-2">Hola, {{ $tutor?->first_name }} {{ $tutor?->last_name }}</h1>
 
-    @if(session('status'))
-        <div class="mb-4 px-3 py-2 rounded-md bg-green-50 text-green-800 text-sm">
-            {{ session('status') }}
+    <nav class="flex border-b border-gray-200 mb-4" role="tablist">
+        <button
+            type="button"
+            wire:click="$set('activeSection', 'escuela')"
+            class="flex-1 py-2.5 text-sm font-medium border-b-2 transition {{ $activeSection === 'escuela' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700' }}"
+        >
+            Escuela
+        </button>
+        <button
+            type="button"
+            wire:click="$set('activeSection', 'novedades')"
+            class="flex-1 py-2.5 text-sm font-medium border-b-2 transition {{ $activeSection === 'novedades' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700' }}"
+        >
+            Novedades
+        </button>
+        <button
+            type="button"
+            wire:click="$set('activeSection', 'cuotas')"
+            class="flex-1 py-2.5 text-sm font-medium border-b-2 transition {{ $activeSection === 'cuotas' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700' }}"
+        >
+            Pago de cuotas
+        </button>
+    </nav>
+
+    @if($activeSection === 'escuela')
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+            <h2 class="text-base font-semibold text-gray-900 mb-3">Institucional</h2>
+            <div class="flex items-center justify-center gap-4 mb-4">
+                <img src="{{ asset('IMG/logo_juvenilia.jpeg') }}" alt="Logo Juvenilia" class="h-14 w-auto object-contain">
+                <img src="{{ asset('IMG/logodepte.jpeg') }}" alt="Logo Deportivo" class="h-14 w-auto object-contain rounded-lg">
+            </div>
+            <p class="text-sm text-gray-700 mb-2">
+                En la Escuela de Deportes Juvenilia, nos dedicamos a la formación integral de niños y jóvenes a través del deporte. Nuestro enfoque principal está en el desarrollo de habilidades físicas, el trabajo en equipo y la diversión sana. Formamos deportistas, pero sobre todo, formamos personas.
+            </p>
+            <p class="text-sm text-gray-700">
+                <span class="font-semibold">Filosofía:</span>
+                Creemos que el deporte es una herramienta fundamental para forjar el carácter. Fomentamos el respeto, la disciplina y el compañerismo en cada entrenamiento y competencia. Nuestra meta es preparar a nuestros alumnos para los desafíos del futuro con una base sólida de valores.
+            </p>
         </div>
     @endif
 
-    @forelse($tutor?->students ?? [] as $student)
-        <div class="mb-4">
-            <h2 class="text-base font-semibold text-gray-800 mb-2">
-                {{ $student->first_name }} {{ $student->last_name }}
-            </h2>
-
-            @php
-                $pendingFees = $student->fees->where('status', 'pending');
-            @endphp
-
-            @if($pendingFees->isEmpty())
-                <div class="bg-white rounded-lg shadow-sm px-3 py-2 text-sm text-gray-500">
-                    No hay cuotas pendientes para este alumno.
-                </div>
+    @if($activeSection === 'novedades')
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+            <h2 class="text-base font-semibold text-gray-900 mb-3">Novedades</h2>
+            @if(($announcements ?? collect())->isEmpty())
+                <p class="text-sm text-gray-500">No hay comunicados recientes.</p>
             @else
                 <div class="space-y-3">
-                    @foreach($pendingFees as $fee)
-                        <div class="bg-white rounded-xl shadow px-3 py-3 flex flex-col gap-2">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-xs uppercase text-gray-500">Cuota</p>
-                                    <p class="text-sm font-semibold text-gray-900">
-                                        {{ \Illuminate\Support\Str::upper(\Carbon\Carbon::createFromFormat('Y-m', $fee->period)->translatedFormat('F Y')) }}
-                                    </p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-xs text-gray-500">Monto</p>
-                                    <p class="text-base font-bold text-gray-900">
-                                        $ {{ number_format($fee->amount, 2, ',', '.') }}
-                                    </p>
-                                </div>
+                    @foreach($announcements as $announcement)
+                        <article class="border border-gray-100 rounded-xl overflow-hidden shadow-sm">
+                            @if($announcement->image_path)
+                                <img
+                                    src="{{ asset('storage/'.$announcement->image_path) }}"
+                                    alt="Imagen de la novedad"
+                                    class="w-full h-40 object-cover"
+                                >
+                            @endif
+                            <div class="px-3 py-3 space-y-1.5">
+                                <h3 class="text-sm font-semibold text-gray-900">
+                                    {{ $announcement->title }}
+                                </h3>
+                                <p class="text-[11px] text-gray-500">
+                                    {{ $announcement->created_at->format('d/m/Y H:i') }}
+                                </p>
+                                <p class="text-sm text-gray-700 whitespace-pre-line">
+                                    {{ $announcement->content }}
+                                </p>
                             </div>
-                            <div class="flex items-center justify-between text-xs text-gray-600">
-                                <span>Vencimiento: {{ $fee->due_date->format('d/m/Y') }}</span>
-                                <span class="px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-800 text-[11px] font-medium">
-                                    Pendiente
-                                </span>
-                            </div>
-                            <button
-                                type="button"
-                                wire:click="openPaymentModal({{ $fee->id }})"
-                                class="mt-1 w-full inline-flex items-center justify-center px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium"
-                            >
-                                Informar pago
-                            </button>
-                        </div>
+                        </article>
                     @endforeach
                 </div>
             @endif
         </div>
-    @empty
-        <p class="text-sm text-gray-600">Aún no tenés alumnos asignados.</p>
-    @endforelse
+    @endif
+
+    @if($activeSection === 'cuotas')
+        @if(session('status'))
+            <div class="mb-4 px-3 py-2 rounded-md bg-green-50 text-green-800 text-sm">
+                {{ session('status') }}
+            </div>
+        @endif
+
+        <h2 class="text-base font-semibold text-gray-900 mb-2">Cuotas pendientes</h2>
+
+        @forelse($tutor?->students ?? [] as $student)
+            <div class="mb-4">
+                <h3 class="text-base font-semibold text-gray-800 mb-2">
+                    {{ $student->first_name }} {{ $student->last_name }}
+                </h3>
+
+                @php
+                    $pendingFees = $student->fees->where('status', 'pending');
+                @endphp
+
+                @if($pendingFees->isEmpty())
+                    <div class="bg-white rounded-lg shadow-sm px-3 py-2 text-sm text-gray-500">
+                        No hay cuotas pendientes para este alumno.
+                    </div>
+                @else
+                    <div class="space-y-3">
+                        @foreach($pendingFees as $fee)
+                            <div class="bg-white rounded-xl shadow px-3 py-3 flex flex-col gap-2">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs uppercase text-gray-500">Cuota</p>
+                                        <p class="text-sm font-semibold text-gray-900">
+                                            {{ \Illuminate\Support\Str::upper(\Carbon\Carbon::createFromFormat('Y-m', $fee->period)->translatedFormat('F Y')) }}
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs text-gray-500">Monto</p>
+                                        <p class="text-base font-bold text-gray-900">
+                                            $ {{ number_format($fee->amount, 2, ',', '.') }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-xs text-gray-600">
+                                    <span>Vencimiento: {{ $fee->due_date->format('d/m/Y') }}</span>
+                                    <span class="px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-800 text-[11px] font-medium">
+                                        Pendiente
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    wire:click="openPaymentModal({{ $fee->id }})"
+                                    class="mt-1 w-full inline-flex items-center justify-center px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium"
+                                >
+                                    Informar pago
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        @empty
+            <p class="text-sm text-gray-600">Aún no tenés alumnos asignados.</p>
+        @endforelse
+    @endif
 
     @if($showPaymentModal && $selectedFeeId)
         <div
@@ -119,17 +197,29 @@
 
                     <form wire:submit.prevent="submitPaymentProof" class="space-y-3">
                         <div>
+                            <label for="transfer_sender_name" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Titular de la cuenta origen (Quien transfiere)</label>
+                            <input
+                                id="transfer_sender_name"
+                                type="text"
+                                wire:model.defer="transfer_sender_name"
+                                placeholder="Ej: Juan Pérez"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:border-blue-500 focus:ring-blue-500"
+                            >
+                            @error('transfer_sender_name') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Adjuntar comprobante</label>
                             <input
                                 type="file"
                                 wire:model="paymentProof"
                                 accept="image/jpeg,image/jpg,image/png,application/pdf"
-                                class="w-full text-sm text-gray-700"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-700"
                             >
                             <p class="text-[11px] text-gray-500 mt-1">
                                 Formatos permitidos: JPG, PNG o PDF. Tamaño máximo: 2MB.
                             </p>
-                            @error('paymentProof') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror>
+                            @error('paymentProof') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div class="pt-1 flex gap-2">
@@ -153,4 +243,3 @@
         </div>
     @endif
 </div>
-

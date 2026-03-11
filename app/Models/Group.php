@@ -10,6 +10,7 @@ class Group extends Model
     use HasFactory;
 
     protected $fillable = [
+        'teacher_id',
         'name',
         'description',
         'year',
@@ -34,6 +35,11 @@ class Group extends Model
     public function fees()
     {
         return $this->hasMany(Fee::class);
+    }
+
+    public function teacher()
+    {
+        return $this->belongsTo(Teacher::class);
     }
 }
 

@@ -12,12 +12,14 @@ class Payment extends Model
     protected $fillable = [
         'fee_id',
         'tutor_id',
+        'teacher_id',
         'amount_reported',
         'paid_on_date',
         'status',
         'evidence_file_path',
         'evidence_file_size',
         'evidence_mime_type',
+        'transfer_sender_name',
         'bank_reference',
         'admin_comment',
         'reviewed_by',
@@ -40,6 +42,11 @@ class Payment extends Model
     public function tutor()
     {
         return $this->belongsTo(Tutor::class);
+    }
+
+    public function teacher()
+    {
+        return $this->belongsTo(Teacher::class);
     }
 
     public function reviewer()

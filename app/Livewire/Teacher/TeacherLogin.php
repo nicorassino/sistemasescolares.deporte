@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Livewire\Tutor;
+namespace App\Livewire\Teacher;
 
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-class TutorLogin extends Component
+class TeacherLogin extends Component
 {
     public string $email = '';
 
     public string $password = '';
 
-    #[Layout('layouts.tutor')]
+    #[Layout('layouts.teacher')]
     public function render()
     {
-        return view('livewire.tutor.tutor-login');
+        return view('livewire.teacher.teacher-login');
     }
 
     public function authenticate()
@@ -36,14 +36,14 @@ class TutorLogin extends Component
 
         $user = Auth::user();
 
-        if ($user->role !== 'tutor' || ! $user->tutor) {
+        if ($user->role !== 'teacher' || ! $user->teacher) {
             Auth::logout();
-            $this->addError('email', 'Este acceso es solo para padres y tutores.');
+            $this->addError('email', 'Este acceso es solo para profesores.');
             return;
         }
 
         session()->regenerate();
 
-        return redirect()->route('tutor.dashboard');
+        return redirect()->route('profesor.dashboard');
     }
 }
