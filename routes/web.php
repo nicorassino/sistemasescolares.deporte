@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Controllers\DebtPdfController;
 use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\StudentPdfController;
 use App\Models\Fee;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use App\Livewire\Admin\AdminDashboard;
 use App\Livewire\Admin\AnnouncementManager;
 use App\Livewire\Admin\FeeManager;
 use App\Livewire\Admin\GeneradorCuotasMasivo;
@@ -33,13 +36,17 @@ Route::get('/recibo/{fee}/descargar', [ReceiptController::class, 'download'])
     ->name('receipt.download.signed');
 
 Route::prefix('admin')->group(function () {
+    Route::get('/', AdminDashboard::class)->name('admin.dashboard');
     Route::get('/grupos', GroupsPage::class)->name('admin.groups');
     Route::get('/alumnos', StudentsPage::class)->name('admin.students');
+    Route::get('/alumnos/pdf/listado', [StudentPdfController::class, 'groups'])->name('admin.students-pdf.by-group');
     Route::get('/novedades', AnnouncementManager::class)->name('admin.announcements');
     Route::get('/profesores', TeachersPage::class)->name('admin.teachers');
     Route::get('/cuotas/generar', GeneradorCuotasMasivo::class)->name('admin.fees.generate');
     Route::get('/tesoreria', TreasuryPanel::class)->name('admin.treasury');
     Route::get('/deudas', FeeManager::class)->name('admin.fee-manager');
+    Route::get('/deudas/pdf/alumno/{student}', [DebtPdfController::class, 'student'])->name('admin.debt-pdf.student');
+    Route::get('/deudas/pdf/grupo/{group}', [DebtPdfController::class, 'group'])->name('admin.debt-pdf.group');
     Route::get('/tesoreria/comprobante/{payment}', function (Payment $payment) {
         if (! $payment->evidence_file_path || ! Storage::exists($payment->evidence_file_path)) {
             abort(404);

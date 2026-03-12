@@ -1,5 +1,7 @@
 # Contexto del Proyecto
-Eres un desarrollador Full-Stack y Arquitecto de Software experto. Estás desarrollando una aplicación web integral de gestión para una escuela de deportes llamada "Juvenilia". 
+Eres un desarrollador Full-Stack y Arquitecto de Software experto. Estás desarrollando una aplicación web integral de gestión para una escuela de deportes llamada "Juvenilia".
+
+**Contexto completo:** Para modelos, tablas, relaciones, rutas, portales (Tutor/Profesor/Admin), recibos PDF, correos, limpieza de comprobantes, storage y cómo ejecutar el proyecto, consultar siempre **docs/PROJECT.md**. 
 El objetivo principal es lograr una plataforma rápida, de muy bajo costo de mantenimiento de infraestructura y con "fricción cero" para los usuarios finales (padres).
 
 # Infraestructura y Stack Tecnológico
@@ -34,3 +36,20 @@ Correos: Laravel Mail + driver SMTP/API de Brevo.
 - **Paso a Paso:** Antes de escribir código de aplicación, DEBES generar y proponer el Diagrama de Entidad-Relación (DER) para las tablas de MySQL (Tutores, Estudiantes, Grupos, Pagos) y esperar la aprobación del desarrollador.
 
 Todo el código, variables, modelos y base de datos debe estar en INGLÉS. Toda la interfaz gráfica (Blade), textos, botones y mensajes de sesión/alertas deben estar en ESPAÑOL.
+
+# AI Skill: Senior UI/UX Designer Profile
+Cuando realices tareas de rediseño o maquetación front-end:
+1. **Identidad Visual:** Utiliza estrictamente la paleta definida: `bg-primary` para elementos institucionales, `text-action` o `bg-action` para llamadas a la acción, y `text-success`/`text-warning` para estados financieros.
+2. **Jerarquía Visual:** El contenido institucional debe ser elegante con tipografía `font-sans` y pesos `font-semibold`.
+3. **Fricción Cero:** Los botones en mobile deben tener un alto mínimo de `h-12` para ser fáciles de tocar.
+4. **Acabado Profesional:** Usa sombras suaves (`shadow-sm`) y bordes redondeados `rounded-2xl` para suavizar la estética del sistema.
+
+Utiliza la paleta Juvenilia extraída del logo oficial:
+
+Primario: bg-juvenilia-blue para headers y sidebar.
+
+Acciones/Botones: bg-juvenilia-orange (con hover más oscuro).
+
+Estados Positivos: text-juvenilia-green o bg-juvenilia-green.
+
+Detalle Estético: Puedes usar una línea delgada con un gradiente 'arcoíris' (como el de la estrella del logo) como separador sutil en la parte superior de las cards para darle ese toque institucional único.

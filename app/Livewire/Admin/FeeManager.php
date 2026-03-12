@@ -5,6 +5,9 @@ namespace App\Livewire\Admin;
 use App\Mail\PaymentReminderMail;
 use App\Models\Fee;
 use App\Models\Group;
+use App\Models\Student;
+use App\Models\Tutor;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -19,6 +22,10 @@ class FeeManager extends Component
 
     public ?string $filterStatus = null;
 
+    public string $studentSearch = '';
+
+    public ?int $pdfGroupId = null;
+
     #[Layout('layouts.app')]
     public function render()
     {
@@ -26,6 +33,35 @@ class FeeManager extends Component
             ->with(['student.tutors.user', 'group'])
             ->orderBy('period')
             ->orderBy('due_date');
+
+        $search = trim($this->studentSearch);
+        if ($search !== '') {
+            $tutorIds = Tutor::query()
+                ->where('dni', 'like', "%{$search}%")
+                ->orWhereHas('user', fn ($u) => $u->where('email', 'like', "%{$search}%"))
+                ->pluck('id');
+
+            $studentIds = Student::query()
+                ->where('last_name', 'like', "%{$search}%")
+                ->orWhere('first_name', 'like', "%{$search}%")
+                ->orWhere('dni', 'like', "%{$search}%")
+                ->pluck('id');
+
+            if ($studentIds->isNotEmpty()) {
+                $extraTutorIds = DB::table('tutor_student')
+                    ->whereIn('student_id', $studentIds)
+                    ->pluck('tutor_id');
+                $tutorIds = $tutorIds->merge($extraTutorIds)->unique();
+            }
+
+            if ($tutorIds->isNotEmpty()) {
+                $query->whereHas('student.tutors', fn ($q) => $q->whereIn('tutors.id', $tutorIds));
+            } elseif ($studentIds->isNotEmpty()) {
+                $query->whereIn('student_id', $studentIds);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
 
         if (trim((string) $this->filterMonth) !== '') {
             $query->whereRaw('SUBSTRING(period, 6, 2) = ?', [str_pad($this->filterMonth, 2, '0', STR_PAD_LEFT)]);

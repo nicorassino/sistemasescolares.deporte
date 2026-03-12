@@ -102,8 +102,8 @@
                                     </button>
                                     <button
                                         type="button"
-                                        wire:click="delete({{ $announcement->id }})"
                                         class="text-red-600 hover:underline"
+                                        onclick="if (confirm('¿Eliminar esta novedad? Esta acción no se puede deshacer.')) { @this.call('delete', {{ $announcement->id }}) }"
                                     >
                                         Eliminar
                                     </button>

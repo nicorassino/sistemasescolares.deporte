@@ -30,6 +30,8 @@ class ReceiptController extends Controller
             'fee' => $fee,
             'paymentMethod' => $paymentMethod,
             'paidAt' => $fee->paid_at ?? $latestPayment?->paid_on_date,
+            'logoJuvenilia' => public_path('IMG/logo_juvenilia.jpeg'),
+            'logoDeporte' => public_path('IMG/logodepte.jpeg'),
         ]);
 
         $filename = 'recibo-' . $fee->id . '-' . $fee->period . '.pdf';

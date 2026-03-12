@@ -7,8 +7,8 @@
         <div class="flex items-center gap-2">
             <input
                 type="text"
-                wire:model.debounce.300ms="search"
-                placeholder="Buscar por nombre o email..."
+                wire:model.live.debounce.300ms="search"
+                placeholder="Buscar por apellido, nombre o email..."
                 class="w-full sm:w-64 border rounded-lg px-3 py-2 text-sm"
             >
             <button
@@ -183,8 +183,20 @@
                                 </span>
                             </td>
                             <td class="px-3 py-2 text-right space-x-2">
-                                <button wire:click="edit({{ $teacher->id }})" class="text-blue-600 text-xs">Editar</button>
-                                <button wire:click="delete({{ $teacher->id }})" class="text-red-600 text-xs">Eliminar</button>
+                                <button
+                                    type="button"
+                                    wire:click="edit({{ $teacher->id }})"
+                                    class="text-blue-600 text-xs"
+                                >
+                                    Editar
+                                </button>
+                                <button
+                                    type="button"
+                                    class="text-red-600 text-xs"
+                                    onclick="if (confirm('¿Eliminar este profesor? Esta acción no se puede deshacer.')) { @this.call('delete', {{ $teacher->id }}) }"
+                                >
+                                    Eliminar
+                                </button>
                             </td>
                         </tr>
                     @empty

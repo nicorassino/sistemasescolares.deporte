@@ -17,7 +17,19 @@
 
     <div class="bg-white rounded-xl shadow border border-gray-100 p-4 mb-6">
         <h2 class="text-sm font-semibold text-gray-700 mb-3">Filtros</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div class="lg:col-span-2">
+                <label class="block text-xs font-medium text-gray-600 mb-1">Alumno / Tutor</label>
+                <input
+                    type="text"
+                    wire:model.live="studentSearch"
+                    placeholder="Buscar por alumno (apellido, nombre, DNI) o tutor (DNI/email)"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                >
+                <p class="text-[11px] text-gray-500 mt-1">
+                    Si el alumno comparte tutor, también se cargarán las deudas de los demás alumnos de ese tutor (indicando el alumno en cada fila).
+                </p>
+            </div>
             <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Mes</label>
                 <select wire:model.live="filterMonth" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
@@ -49,6 +61,32 @@
                     <option value="paid">Pagado</option>
                 </select>
             </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow border border-gray-100 p-4 mb-4 flex flex-wrap items-center gap-3">
+        <span class="text-sm font-semibold text-gray-700">Exportar a PDF:</span>
+        <div class="flex flex-wrap items-center gap-2">
+            <label class="text-xs text-gray-600">Por grupo</label>
+            <select
+                wire:model.live="pdfGroupId"
+                class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm"
+            >
+                <option value="">Seleccionar grupo...</option>
+                @foreach($groups as $g)
+                    <option value="{{ $g->id }}">{{ $g->name }}</option>
+                @endforeach
+            </select>
+            @if($pdfGroupId)
+                <a
+                    href="{{ route('admin.debt-pdf.group', $pdfGroupId) }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center px-3 py-1.5 rounded-lg bg-gray-700 text-white text-sm font-medium hover:bg-gray-800"
+                >
+                    Descargar PDF del grupo
+                </a>
+            @endif
         </div>
     </div>
 
@@ -99,6 +137,14 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex flex-col items-end gap-1">
+                                    <a
+                                        href="{{ route('admin.debt-pdf.student', $student) }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="inline-flex items-center px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50"
+                                    >
+                                        PDF deuda
+                                    </a>
                                     @if(in_array($fee->status, ['paid', 'partial'], true))
                                         @php
                                             $receiptUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute('receipt.download.signed', now()->addMinutes(10), ['fee' => $fee]);

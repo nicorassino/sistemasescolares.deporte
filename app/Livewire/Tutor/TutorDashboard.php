@@ -26,6 +26,11 @@ class TutorDashboard extends Component
     /** Sección visible: escuela | novedades | cuotas */
     public string $activeSection = 'escuela';
 
+    /** Modal de cuotas pagadas */
+    public bool $showPaidModal = false;
+    public ?int $paidStudentId = null;
+    public ?int $paidFilterYear = null;
+
     #[Layout('layouts.tutor')]
     public function render()
     {
@@ -34,8 +39,7 @@ class TutorDashboard extends Component
         $tutor = $user?->tutor()
             ->with([
                 'students.fees' => function ($query) {
-                    $query->where('status', 'pending')
-                        ->orderBy('due_date');
+                    $query->orderBy('due_date');
                 },
             ])
             ->first();
@@ -44,6 +48,20 @@ class TutorDashboard extends Component
             'tutor' => $tutor,
             'announcements' => Announcement::orderByDesc('created_at')->limit(15)->get(),
         ]);
+    }
+
+    public function openPaidModal(int $studentId): void
+    {
+        $this->paidStudentId = $studentId;
+        $this->paidFilterYear = null;
+        $this->showPaidModal = true;
+    }
+
+    public function closePaidModal(): void
+    {
+        $this->showPaidModal = false;
+        $this->paidStudentId = null;
+        $this->paidFilterYear = null;
     }
 
     public function openPaymentModal(int $feeId): void

@@ -7,6 +7,8 @@
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #1f2937; padding: 24px; }
         .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #1f2937; padding-bottom: 12px; }
+        .header-logos { margin-bottom: 8px; }
+        .header-logos img { max-height: 48px; width: auto; vertical-align: middle; margin: 0 8px; }
         .title { font-size: 18px; font-weight: bold; }
         .subtitle { font-size: 11px; color: #6b7280; margin-top: 4px; }
         table { width: 100%; border-collapse: collapse; margin-top: 16px; }
@@ -18,6 +20,14 @@
 </head>
 <body>
     <div class="header">
+        @if(!empty($logoJuvenilia) && is_file($logoJuvenilia))
+            <div class="header-logos">
+                <img src="{{ $logoJuvenilia }}" alt="Juvenilia">
+                @if(!empty($logoDeporte) && is_file($logoDeporte))
+                    <img src="{{ $logoDeporte }}" alt="Deporte">
+                @endif
+            </div>
+        @endif
         <div class="title">Escuela de Deportes Juvenilia</div>
         <div class="subtitle">Recibo de pago</div>
     </div>

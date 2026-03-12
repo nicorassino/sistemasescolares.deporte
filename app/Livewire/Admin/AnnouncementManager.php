@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\Announcement;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\User;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -82,8 +83,14 @@ class AnnouncementManager extends Component
         if ($this->editing) {
             $this->editing->update($data);
         } else {
-            $user = Auth::user();
-            Announcement::create($data + ['author_id' => $user?->id]);
+            $userId = Auth::id();
+
+            if (! $userId) {
+                $userId = User::where('role', 'admin')->value('id')
+                    ?? User::query()->value('id');
+            }
+
+            Announcement::create($data + ['author_id' => $userId]);
         }
 
         $this->resetForm();

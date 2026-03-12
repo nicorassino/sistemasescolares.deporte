@@ -93,6 +93,7 @@
 
                 @php
                     $pendingFees = $student->fees->where('status', 'pending');
+                    $paidFees = $student->fees->where('status', 'paid');
                 @endphp
 
                 @if($pendingFees->isEmpty())
@@ -132,6 +133,18 @@
                                 </button>
                             </div>
                         @endforeach
+                    </div>
+                @endif
+
+                @if($paidFees->isNotEmpty())
+                    <div class="mt-3">
+                        <button
+                            type="button"
+                            wire:click="openPaidModal({{ $student->id }})"
+                            class="inline-flex items-center px-3 py-2 rounded-lg border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                            Ver cuotas pagadas
+                        </button>
                     </div>
                 @endif
             </div>
@@ -238,6 +251,99 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if($showPaidModal && $paidStudentId)
+        @php
+            $paidStudent = optional($tutor?->students)->firstWhere('id', $paidStudentId);
+            $allPaidFees = $paidStudent ? $paidStudent->fees->where('status', 'paid') : collect();
+            $years = $allPaidFees
+                ->map(fn($fee) => substr($fee->period, 0, 4))
+                ->filter()
+                ->unique()
+                ->sortDesc()
+                ->values();
+            $filteredPaidFees = $allPaidFees;
+            if ($paidFilterYear) {
+                $filteredPaidFees = $filteredPaidFees->filter(fn($fee) => substr($fee->period, 0, 4) == (string) $paidFilterYear);
+            }
+        @endphp
+        <div
+            class="fixed inset-0 z-40 flex items-center justify-center bg-black/40"
+            x-data="{ openPaid: true }"
+            x-show="openPaid"
+            x-transition
+        >
+            <div class="bg-white rounded-2xl shadow-lg w-full max-w-md mx-3 max-h-[90vh] overflow-y-auto"
+                 @click.outside="openPaid = false; $wire.closePaidModal()">
+                <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                    <h2 class="text-base font-semibold text-gray-900">
+                        Cuotas pagadas
+                        @if($paidStudent)
+                            — {{ $paidStudent->first_name }} {{ $paidStudent->last_name }}
+                        @endif
+                    </h2>
+                    <button
+                        type="button"
+                        class="text-gray-400 hover:text-gray-600 text-xl leading-none"
+                        @click="openPaid = false; $wire.closePaidModal()"
+                    >
+                        &times;
+                    </button>
+                </div>
+
+                <div class="px-4 py-3 space-y-3">
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-medium text-gray-700">Filtrar por año</label>
+                        <select
+                            wire:model.live="paidFilterYear"
+                            class="border border-gray-300 rounded-md px-2 py-1.5 text-xs"
+                        >
+                            <option value="">Todos</option>
+                            @foreach($years as $year)
+                                <option value="{{ $year }}">{{ $year }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    @if($filteredPaidFees->isEmpty())
+                        <p class="text-xs text-gray-500">
+                            No hay cuotas pagadas para el año seleccionado.
+                        </p>
+                    @else
+                        <div class="space-y-2">
+                            @foreach($filteredPaidFees as $fee)
+                                <div class="bg-gray-50 rounded-lg px-3 py-2 flex items-center justify-between text-xs">
+                                    <div>
+                                        <p class="font-medium text-gray-900">
+                                            {{ \Illuminate\Support\Str::upper(\Carbon\Carbon::createFromFormat('Y-m', $fee->period)->translatedFormat('F Y')) }}
+                                        </p>
+                                        @if($fee->paid_at)
+                                            <p class="text-[11px] text-gray-500">
+                                                Pagada el {{ $fee->paid_at->format('d/m/Y') }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                    <div class="flex flex-col items-end gap-1">
+                                        <span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[11px] font-medium">
+                                            Pagado
+                                        </span>
+                                        <a
+                                            href="{{ route('receipt.download', $fee) }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="inline-flex items-center px-2.5 py-1.5 rounded-md bg-blue-600 text-white text-[11px] font-medium hover:bg-blue-700"
+                                        >
+                                            Ver comprobante
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
