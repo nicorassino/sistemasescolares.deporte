@@ -9,7 +9,7 @@
                 type="text"
                 wire:model.live.debounce.300ms="search"
                 placeholder="Buscar por apellido, nombre o email..."
-                class="w-full sm:w-64 border rounded-lg px-3 py-2 text-sm"
+                class="w-full sm:w-64 border border-gray-300 rounded-lg px-3 py-2 text-sm"
             >
             <button
                 type="button"
@@ -31,12 +31,12 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium mb-1">Nombre</label>
-                        <input type="text" wire:model.defer="first_name" class="w-full border rounded px-3 py-2 text-sm">
+                        <input type="text" wire:model.defer="first_name" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         @error('first_name') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Apellido</label>
-                        <input type="text" wire:model.defer="last_name" class="w-full border rounded px-3 py-2 text-sm">
+                        <input type="text" wire:model.defer="last_name" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         @error('last_name') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -44,19 +44,19 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium mb-1">Email</label>
-                        <input type="email" wire:model.defer="email" class="w-full border rounded px-3 py-2 text-sm">
+                        <input type="email" wire:model.defer="email" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         @error('email') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Teléfono</label>
-                        <input type="text" wire:model.defer="phone" class="w-full border rounded px-3 py-2 text-sm">
+                        <input type="text" wire:model.defer="phone" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         @error('phone') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium mb-1">Notas</label>
-                    <textarea wire:model.defer="notes" class="w-full border rounded px-3 py-2 text-sm" rows="2"></textarea>
+                    <textarea wire:model.defer="notes" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" rows="2"></textarea>
                     @error('notes') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
@@ -75,7 +75,7 @@
                                 type="email"
                                 wire:model.defer="login_email"
                                 placeholder="ej: profesor@escuela.com"
-                                class="w-full border rounded px-3 py-2 text-sm"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
                             >
                             @error('login_email') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
@@ -85,7 +85,7 @@
                                 type="password"
                                 wire:model.defer="login_password"
                                 placeholder="{{ $editing && $editing->user_id ? 'Dejar en blanco para no cambiar' : 'Mín. 6 caracteres' }}"
-                                class="w-full border rounded px-3 py-2 text-sm"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
                                 autocomplete="new-password"
                             >
                             @error('login_password') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
@@ -95,7 +95,7 @@
 
                 <div>
                     <label class="block text-sm font-medium mb-1">Grupos a cargo</label>
-                    <div class="border rounded-lg max-h-48 overflow-y-auto p-2 space-y-1">
+                    <div class="border border-gray-200 rounded-lg max-h-48 overflow-y-auto p-2 space-y-1">
                         @forelse($groups as $group)
                             <label class="flex items-center gap-2 text-sm">
                                 <input
@@ -119,11 +119,11 @@
                 </div>
 
                 <div class="flex gap-2 mt-2">
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm rounded">
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg">
                         Guardar
                     </button>
                     @if($editing)
-                        <button type="button" wire:click="create" class="px-3 py-2 text-sm border rounded">
+                        <button type="button" wire:click="create" class="px-3 py-2 text-sm border border-gray-300 rounded-lg">
                             Nuevo
                         </button>
                     @endif
@@ -143,9 +143,9 @@
                         <th class="px-3 py-2 text-right">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-50">
                     @forelse($teachers as $teacher)
-                        <tr class="border-t">
+                        <tr>
                             <td class="px-3 py-2">
                                 <div class="flex flex-col">
                                     <span class="font-medium">{{ $teacher->last_name }}, {{ $teacher->first_name }}</span>

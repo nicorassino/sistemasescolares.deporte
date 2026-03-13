@@ -1,27 +1,55 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-gray-50">
+<html lang="es" class="h-full">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Portal de Padres - Juvenilia</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     @livewireStyles
 </head>
-<body class="h-full bg-gray-50">
+<body class="h-full bg-juvenilia-light">
     <div class="min-h-full flex flex-col">
-        <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
-            <div class="px-3 py-3 flex items-center justify-between">
-                <h1 class="text-base font-semibold text-gray-900">Portal de Padres - Juvenilia</h1>
+        <header class="bg-blue-900 bg-juvenilia-blue sticky top-0 z-30 shadow-lg">
+            <div class="px-4 py-3 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 shrink-0">
+                    <img
+                        src="{{ asset('IMG/logo_juvenilia.jpeg') }}"
+                        alt="Juvenilia"
+                        class="h-10 w-auto object-contain rounded"
+                    >
+                    <div class="w-px h-8 bg-white/20"></div>
+                    <img
+                        src="{{ asset('IMG/logodepte.jpeg') }}"
+                        alt="Deporte"
+                        class="h-10 w-auto object-contain rounded"
+                    >
+                </div>
+
+                <span class="hidden sm:block text-white font-semibold text-sm tracking-wide flex-1 text-center">
+                    Portal de Padres
+                </span>
+
                 @auth
-                    <form action="{{ route('tutor.logout') }}" method="POST" class="inline">
+                    <form action="{{ route('tutor.logout') }}" method="POST" class="inline shrink-0">
                         @csrf
-                        <button type="submit" class="text-sm text-gray-600 hover:text-gray-900 py-1 px-2">
-                            Cerrar sesión
+                        <button
+                            type="submit"
+                            class="flex items-center gap-1.5 text-sm text-white/80 hover:text-white
+                                   bg-white/10 hover:bg-white/20 active:bg-white/30
+                                   px-3 py-1.5 rounded-lg transition-all duration-150"
+                        >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M18 15l3-3m0 0l-3-3m3 3H9"/>
+                            </svg>
+                            Salir
                         </button>
                     </form>
                 @endauth
             </div>
+
+            <div class="h-[3px] header-rainbow"></div>
         </header>
 
         <main class="flex-1">

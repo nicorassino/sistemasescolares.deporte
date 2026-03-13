@@ -26,30 +26,30 @@
         <form wire:submit.prevent="save" class="space-y-3">
             <div>
                 <label class="block text-sm font-medium mb-1">Nombre <span class="text-red-500">*</span></label>
-                <input type="text" wire:model.blur="name" class="w-full border rounded px-3 py-2 text-sm">
+                <input type="text" wire:model.blur="name" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                 @error('name') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label class="block text-sm font-medium mb-1">Descripción <span class="text-gray-400">(opcional)</span></label>
-                <textarea wire:model.defer="description" class="w-full border rounded px-3 py-2 text-sm" rows="2"></textarea>
+                <textarea wire:model.defer="description" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" rows="2"></textarea>
                 @error('description') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                     <label class="block text-sm font-medium mb-1">Año <span class="text-red-500">*</span></label>
-                    <input type="number" wire:model.blur="year" min="2000" max="2100" placeholder="ej. 2026" class="w-full border rounded px-3 py-2 text-sm">
+                    <input type="number" wire:model.blur="year" min="2000" max="2100" placeholder="ej. 2026" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     @error('year') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Nivel <span class="text-gray-400">(opcional)</span></label>
-                    <input type="text" wire:model.defer="level" class="w-full border rounded px-3 py-2 text-sm">
+                    <input type="text" wire:model.defer="level" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     @error('level') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Capacidad máx. <span class="text-gray-400">(opcional)</span></label>
-                    <input type="number" wire:model.defer="max_capacity" min="1" class="w-full border rounded px-3 py-2 text-sm">
+                    <input type="number" wire:model.defer="max_capacity" min="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     @error('max_capacity') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
@@ -64,7 +64,7 @@
                     Guardar
                 </button>
                 @if($editing)
-                    <button type="button" wire:click="create" class="px-3 py-2 text-sm border rounded">
+                    <button type="button" wire:click="create" class="px-3 py-2 text-sm border border-gray-300 rounded-lg">
                         Nuevo
                     </button>
                 @endif
@@ -84,9 +84,9 @@
                     <th class="px-3 py-2 text-right">Acciones</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-gray-50">
                 @forelse($groups as $group)
-                    <tr class="border-t" wire:key="group-row-{{ $group->id }}">
+                    <tr wire:key="group-row-{{ $group->id }}">
                         <td class="px-3 py-2">{{ $group->name }}</td>
                         <td class="px-3 py-2 hidden sm:table-cell truncate max-w-xs">{{ $group->description }}</td>
                         <td class="px-3 py-2">{{ $group->year }}</td>

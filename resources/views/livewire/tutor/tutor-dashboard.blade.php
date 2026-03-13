@@ -1,28 +1,48 @@
-<div class="px-3 py-4 max-w-2xl mx-auto">
-    <h1 class="text-xl font-semibold text-gray-900 mb-2">Hola, {{ $tutor?->first_name }} {{ $tutor?->last_name }}</h1>
+<div class="px-3 py-5 max-w-2xl mx-auto pb-20">
+    <div class="mb-5">
+        <p class="text-xs font-semibold uppercase tracking-widest text-juvenilia-blue/70 mb-0.5">Bienvenido</p>
+        <h1 class="text-2xl font-black text-juvenilia-blue leading-tight">
+            {{ $tutor?->first_name }} {{ $tutor?->last_name }}
+        </h1>
+        <p class="text-sm text-gray-500 mt-0.5">Consultá novedades y gestioná el pago de cuotas.</p>
+    </div>
 
-    <nav class="flex border-b border-gray-200 mb-4" role="tablist">
-        <button
-            type="button"
-            wire:click="$set('activeSection', 'escuela')"
-            class="flex-1 py-2.5 text-sm font-medium border-b-2 transition {{ $activeSection === 'escuela' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700' }}"
-        >
-            Escuela
-        </button>
-        <button
-            type="button"
-            wire:click="$set('activeSection', 'novedades')"
-            class="flex-1 py-2.5 text-sm font-medium border-b-2 transition {{ $activeSection === 'novedades' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700' }}"
-        >
-            Novedades
-        </button>
-        <button
-            type="button"
-            wire:click="$set('activeSection', 'cuotas')"
-            class="flex-1 py-2.5 text-sm font-medium border-b-2 transition {{ $activeSection === 'cuotas' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700' }}"
-        >
-            Pago de cuotas
-        </button>
+    <nav class="mb-4">
+        <div class="inline-flex bg-white rounded-full shadow-sm border border-gray-100 p-1.5 w-full">
+            <button
+                type="button"
+                wire:click="$set('activeSection', 'escuela')"
+                class="flex-1 px-3 py-2 rounded-full text-xs sm:text-sm font-semibold text-center
+                       transition-all duration-150 active:scale-95
+                       {{ $activeSection === 'escuela'
+                          ? 'bg-blue-700 bg-juvenilia-blue text-white shadow'
+                          : 'text-gray-500 hover:text-juvenilia-blue hover:bg-gray-50' }}"
+            >
+                Escuela
+            </button>
+            <button
+                type="button"
+                wire:click="$set('activeSection', 'novedades')"
+                class="flex-1 px-3 py-2 rounded-full text-xs sm:text-sm font-semibold text-center
+                       transition-all duration-150 active:scale-95
+                       {{ $activeSection === 'novedades'
+                          ? 'bg-blue-700 bg-juvenilia-blue text-white shadow'
+                          : 'text-gray-500 hover:text-juvenilia-blue hover:bg-gray-50' }}"
+            >
+                Novedades
+            </button>
+            <button
+                type="button"
+                wire:click="$set('activeSection', 'cuotas')"
+                class="flex-1 px-3 py-2 rounded-full text-xs sm:text-sm font-semibold text-center
+                       transition-all duration-150 active:scale-95
+                       {{ $activeSection === 'cuotas'
+                          ? 'bg-blue-700 bg-juvenilia-blue text-white shadow'
+                          : 'text-gray-500 hover:text-juvenilia-blue hover:bg-gray-50' }}"
+            >
+                Pago de cuotas
+            </button>
+        </div>
     </nav>
 
     @if($activeSection === 'escuela')
@@ -78,7 +98,10 @@
 
     @if($activeSection === 'cuotas')
         @if(session('status'))
-            <div class="mb-4 px-3 py-2 rounded-md bg-green-50 text-green-800 text-sm">
+            <div class="mb-4 flex items-start gap-3 px-4 py-3 rounded-2xl bg-green-50 border-l-4 border-green-600 border-juvenilia-green shadow-sm text-sm">
+                <svg class="w-5 h-5 text-green-600 text-juvenilia-green mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
                 {{ session('status') }}
             </div>
         @endif
@@ -97,13 +120,13 @@
                 @endphp
 
                 @if($pendingFees->isEmpty())
-                    <div class="bg-white rounded-lg shadow-sm px-3 py-2 text-sm text-gray-500">
+                    <div class="bg-white rounded-2xl shadow-sm px-3 py-2 text-sm text-gray-500">
                         No hay cuotas pendientes para este alumno.
                     </div>
                 @else
                     <div class="space-y-3">
                         @foreach($pendingFees as $fee)
-                            <div class="bg-white rounded-xl shadow px-3 py-3 flex flex-col gap-2">
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 px-3 py-3 flex flex-col gap-2">
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-xs uppercase text-gray-500">Cuota</p>
@@ -127,7 +150,8 @@
                                 <button
                                     type="button"
                                     wire:click="openPaymentModal({{ $fee->id }})"
-                                    class="mt-1 w-full inline-flex items-center justify-center px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium"
+                                    class="mt-1 w-full inline-flex items-center justify-center px-3 py-2 rounded-xl bg-orange-500 bg-juvenilia-orange text-white text-sm font-semibold
+                                           shadow-sm hover:brightness-110 active:scale-95 transition-all duration-150"
                                 >
                                     Informar pago
                                 </button>
@@ -138,13 +162,13 @@
 
                 @if($paidFees->isNotEmpty())
                     <div class="mt-3">
-                        <button
-                            type="button"
-                            wire:click="openPaidModal({{ $student->id }})"
-                            class="inline-flex items-center px-3 py-2 rounded-lg border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-50"
-                        >
-                            Ver cuotas pagadas
-                        </button>
+                            <button
+                                type="button"
+                                wire:click="openPaidModal({{ $student->id }})"
+                                class="inline-flex items-center px-3 py-2 rounded-xl border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-50 active:scale-95 transition-all duration-150"
+                            >
+                                Ver cuotas pagadas
+                            </button>
                     </div>
                 @endif
             </div>
@@ -155,13 +179,33 @@
 
     @if($showPaymentModal && $selectedFeeId)
         <div
-            class="fixed inset-0 z-40 flex items-center justify-center bg-black/40"
+            class="fixed inset-0 z-40 flex items-end sm:items-center justify-center"
             x-data="{ open: true }"
             x-show="open"
-            x-transition
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
         >
-            <div class="bg-white rounded-2xl shadow-lg w-full max-w-md mx-3 max-h-[90vh] overflow-y-auto"
-                 @click.outside="open = false; $wire.closePaymentModal()">
+            <div
+                class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                @click="open = false; $wire.closePaymentModal()"
+            ></div>
+
+            <div class="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-md mx-3 max-h-[92vh] overflow-y-auto"
+                 x-show="open"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-8"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 translate-y-8"
+                 @click.stop>
+                <div class="flex justify-center pt-3 pb-0 sm:hidden">
+                    <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
+                </div>
                 <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                     <h2 class="text-base font-semibold text-gray-900">Informar pago</h2>
                     <button
@@ -216,7 +260,7 @@
                                 type="text"
                                 wire:model.defer="transfer_sender_name"
                                 placeholder="Ej: Juan Pérez"
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:border-blue-500 focus:ring-blue-500"
+                                class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-base focus:border-juvenilia-blue focus:ring-juvenilia-blue"
                             >
                             @error('transfer_sender_name') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
@@ -227,7 +271,7 @@
                                 type="file"
                                 wire:model="paymentProof"
                                 accept="image/jpeg,image/jpg,image/png,application/pdf"
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base text-gray-700"
+                                class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-base text-gray-700"
                             >
                             <p class="text-[11px] text-gray-500 mt-1">
                                 Formatos permitidos: JPG, PNG o PDF. Tamaño máximo: 2MB.
@@ -238,13 +282,14 @@
                         <div class="pt-1 flex gap-2">
                             <button
                                 type="submit"
-                                class="flex-1 inline-flex items-center justify-center px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium"
+                                class="flex-1 inline-flex items-center justify-center px-3 py-2 rounded-xl bg-green-600 bg-juvenilia-green text-white text-sm font-semibold
+                                       shadow-sm hover:brightness-110 active:scale-95 transition-all duration-150"
                             >
                                 Enviar comprobante
                             </button>
                             <button
                                 type="button"
-                                class="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700"
+                                class="px-3 py-2 rounded-xl border border-gray-300 text-sm text-gray-700 hover:bg-gray-50 active:scale-95 transition-all duration-150"
                                 @click="open = false; $wire.closePaymentModal()"
                             >
                                 Cancelar
