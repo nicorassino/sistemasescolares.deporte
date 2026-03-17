@@ -47,7 +47,7 @@
                         class="w-full text-sm"
                     >
                     <p class="text-[11px] text-gray-500 mt-1">
-                        Formatos permitidos: JPG o PNG. Tamaño máximo: 2MB.
+                        Formatos permitidos: JPG o PNG. Tamaño máximo: 15MB.
                     </p>
                     @error('image') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>

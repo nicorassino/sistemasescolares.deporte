@@ -50,7 +50,7 @@ class AnnouncementManager extends Component
         $this->validate([
             'title' => ['required', 'string', 'max:190'],
             'content' => ['required', 'string'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:15360'],
         ]);
 
         // Tope de 15 novedades: antes de insertar una nueva
