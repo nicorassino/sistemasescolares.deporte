@@ -35,11 +35,19 @@ class TutorDashboard extends Component
     public function render()
     {
         $user = Auth::user();
+        $tutorId = $user?->tutor?->id;
 
         $tutor = $user?->tutor()
             ->with([
-                'students.fees' => function ($query) {
+                'students.fees' => function ($query) use ($tutorId) {
                     $query->orderBy('due_date');
+                    $query->with([
+                        'payments' => function ($paymentQuery) use ($tutorId) {
+                            $paymentQuery
+                                ->where('tutor_id', $tutorId)
+                                ->orderByDesc('id');
+                        },
+                    ]);
                 },
             ])
             ->first();
@@ -66,9 +74,25 @@ class TutorDashboard extends Component
 
     public function openPaymentModal(int $feeId): void
     {
+        $user = Auth::user();
+        $tutor = $user?->tutor;
+
         $this->selectedFeeId = $feeId;
         $this->transfer_sender_name = '';
         $this->paymentProof = null;
+
+        if ($tutor) {
+            $existingPayment = Payment::query()
+                ->where('fee_id', $feeId)
+                ->where('tutor_id', $tutor->id)
+                ->latest('id')
+                ->first();
+
+            if ($existingPayment?->transfer_sender_name) {
+                $this->transfer_sender_name = $existingPayment->transfer_sender_name;
+            }
+        }
+
         $this->showPaymentModal = true;
     }
 
@@ -84,12 +108,14 @@ class TutorDashboard extends Component
     {
         $this->validate([
             'transfer_sender_name' => ['required', 'string', 'max:255'],
-            'paymentProof' => ['required', 'file', 'mimes:jpeg,jpg,png,pdf', 'max:2048'],
+            'paymentProof' => ['required', 'file', 'mimetypes:image/jpeg,image/png,application/pdf', 'max:2048'],
         ], [
             'transfer_sender_name.required' => 'El nombre del titular de la cuenta origen es obligatorio.',
             'transfer_sender_name.max' => 'El nombre no puede superar los 255 caracteres.',
             'paymentProof.required' => 'Debe adjuntar el comprobante.',
-            'paymentProof.mimes' => 'El archivo debe ser una imagen (jpg, jpeg, png) o PDF.',
+            'paymentProof.file' => 'El comprobante debe ser un archivo válido.',
+            'paymentProof.mimetypes' => 'El archivo debe ser una imagen (JPG/PNG) o un PDF.',
+            'paymentProof.image' => 'El archivo debe ser una imagen (JPG/PNG) o un PDF.',
             'paymentProof.max' => 'El archivo no puede superar los 2MB.',
         ]);
 
@@ -109,10 +135,17 @@ class TutorDashboard extends Component
         $fileName = "{$safeDni}_fee{$fee->id}_{$timestamp}.{$extension}";
 
         $path = $this->paymentProof->storeAs('payments', $fileName);
+        $existingPayment = Payment::query()
+            ->where('fee_id', $fee->id)
+            ->where('tutor_id', $tutor->id)
+            ->latest('id')
+            ->first();
 
-        Payment::create([
-            'fee_id' => $fee->id,
-            'tutor_id' => $tutor->id,
+        if ($existingPayment?->evidence_file_path && Storage::exists($existingPayment->evidence_file_path)) {
+            Storage::delete($existingPayment->evidence_file_path);
+        }
+
+        $paymentPayload = [
             'amount_reported' => $fee->amount,
             'paid_on_date' => now()->toDateString(),
             'status' => 'pending_review',
@@ -120,14 +153,32 @@ class TutorDashboard extends Component
             'evidence_file_size' => Storage::disk(config('filesystems.default'))->size($path),
             'evidence_mime_type' => $this->paymentProof->getClientMimeType(),
             'transfer_sender_name' => trim($this->transfer_sender_name),
-        ]);
+            'bank_reference' => null,
+            'admin_comment' => null,
+            'reviewed_by' => null,
+            'reviewed_at' => null,
+        ];
+
+        if ($existingPayment) {
+            $existingPayment->update($paymentPayload);
+        } else {
+            Payment::create(array_merge($paymentPayload, [
+                'fee_id' => $fee->id,
+                'tutor_id' => $tutor->id,
+            ]));
+        }
 
         $fee->status = 'pending';
         $fee->save();
 
         $this->closePaymentModal();
 
-        session()->flash('status', 'Comprobante enviado. La administración validará su pago a la brevedad');
+        session()->flash(
+            'status',
+            $existingPayment
+                ? 'Comprobante actualizado. La administración revisará la nueva información.'
+                : 'Comprobante enviado. La administración validará su pago a la brevedad'
+        );
     }
 }
 

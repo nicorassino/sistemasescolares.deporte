@@ -108,6 +108,7 @@ class TutorDashboardTest extends TestCase
 
         Livewire::actingAs($setup['tutorUser'])
             ->test(TutorDashboard::class)
+            ->set('activeSection', 'cuotas')
             ->assertSee('Del Tutor');
     }
 
@@ -129,6 +130,7 @@ class TutorDashboardTest extends TestCase
         // La vista del tutor solo debe mostrar su propio alumno
         Livewire::actingAs($setup['tutorUser'])
             ->test(TutorDashboard::class)
+            ->set('activeSection', 'cuotas')
             ->assertSee('Del Tutor')
             ->assertDontSee('Otro');
     }
@@ -214,6 +216,70 @@ class TutorDashboardTest extends TestCase
     }
 
     /** @test */
+    public function puede_subir_comprobante_pdf(): void
+    {
+        Storage::fake('local');
+        $setup = $this->createTutorWithStudentAndFee('pending');
+        $file = UploadedFile::fake()->create('comprobante.pdf', 200, 'application/pdf');
+
+        Livewire::actingAs($setup['tutorUser'])
+            ->test(TutorDashboard::class)
+            ->call('openPaymentModal', $setup['fee']->id)
+            ->set('transfer_sender_name', 'Titular PDF')
+            ->set('paymentProof', $file)
+            ->call('submitPaymentProof')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('payments', [
+            'fee_id' => $setup['fee']->id,
+            'tutor_id' => $setup['tutor']->id,
+            'status' => 'pending_review',
+            'transfer_sender_name' => 'Titular PDF',
+        ]);
+    }
+
+    /** @test */
+    public function si_ya_existe_pago_para_la_cuota_se_actualiza_y_no_duplica(): void
+    {
+        Storage::fake('local');
+        $setup = $this->createTutorWithStudentAndFee('pending');
+
+        $oldFilePath = UploadedFile::fake()
+            ->image('viejo.jpg')
+            ->storeAs('payments', 'old-proof.jpg', 'local');
+
+        Payment::create([
+            'fee_id' => $setup['fee']->id,
+            'tutor_id' => $setup['tutor']->id,
+            'amount_reported' => $setup['fee']->amount,
+            'paid_on_date' => now()->subDay()->toDateString(),
+            'status' => 'pending_review',
+            'evidence_file_path' => $oldFilePath,
+            'evidence_file_size' => 1234,
+            'evidence_mime_type' => 'image/jpeg',
+            'transfer_sender_name' => 'Titular Viejo',
+        ]);
+
+        $newFile = UploadedFile::fake()->image('nuevo.jpg');
+
+        Livewire::actingAs($setup['tutorUser'])
+            ->test(TutorDashboard::class)
+            ->call('openPaymentModal', $setup['fee']->id)
+            ->set('transfer_sender_name', 'Titular Nuevo')
+            ->set('paymentProof', $newFile)
+            ->call('submitPaymentProof')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseCount('payments', 1);
+        $this->assertDatabaseHas('payments', [
+            'fee_id' => $setup['fee']->id,
+            'tutor_id' => $setup['tutor']->id,
+            'status' => 'pending_review',
+            'transfer_sender_name' => 'Titular Nuevo',
+        ]);
+    }
+
+    /** @test */
     public function falla_al_informar_pago_sin_comprobante(): void
     {
         $setup = $this->createTutorWithStudentAndFee('pending');
@@ -261,6 +327,7 @@ class TutorDashboardTest extends TestCase
 
         Livewire::actingAs($setup['tutorUser'])
             ->test(TutorDashboard::class)
+            ->set('activeSection', 'novedades')
             ->assertSee('Novedad Visible Tutor');
     }
 

@@ -73,6 +73,7 @@ class ReceiptControllerTest extends TestCase
             'amount_reported' => 5000,
             'status' => 'approved',
             'reviewed_at' => now(),
+            'paid_on_date' => now(),
         ]);
 
         return compact('student', 'group', 'fee', 'tutorUser', 'tutor');
@@ -92,6 +93,9 @@ class ReceiptControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertHeader('content-type', 'application/pdf');
+
+        $setup['fee']->refresh();
+        $this->assertNotNull($setup['fee']->receipt_number);
     }
 
     /** @test */

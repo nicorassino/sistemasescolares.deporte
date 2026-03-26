@@ -48,6 +48,9 @@ class AnnouncementManagerTest extends TestCase
     /** @test */
     public function la_ruta_novedades_renderiza_correctamente(): void
     {
+        $admin = $this->adminUser();
+        $this->actingAs($admin);
+
         $response = $this->get('/admin/novedades');
 
         $response->assertStatus(200);

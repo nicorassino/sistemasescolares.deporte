@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Fee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReceiptController extends Controller
@@ -26,8 +27,16 @@ class ReceiptController extends Controller
         $latestPayment = $fee->payments->first();
         $paymentMethod = $latestPayment && $latestPayment->teacher_id ? 'Efectivo' : 'Transferencia';
 
+        if (! $fee->receipt_number) {
+            $fee->receipt_number = $this->generateReceiptNumber($fee->id);
+            $fee->save();
+        }
+
+        $receiptNumber = $fee->receipt_number;
+
         $pdf = Pdf::loadView('pdf.receipt-pdf', [
             'fee' => $fee,
+            'receiptNumber' => $receiptNumber,
             'paymentMethod' => $paymentMethod,
             'paidAt' => $fee->paid_at ?? $latestPayment?->paid_on_date,
             'logoJuvenilia' => public_path('IMG/logo_juvenilia.jpeg'),
@@ -37,5 +46,18 @@ class ReceiptController extends Controller
         $filename = 'recibo-' . $fee->id . '-' . $fee->period . '.pdf';
 
         return $pdf->download($filename);
+    }
+
+    protected function generateReceiptNumber(int $feeId): string
+    {
+        $datePart = now()->format('Ymd');
+        $sequencePart = str_pad((string) $feeId, 6, '0', STR_PAD_LEFT);
+
+        do {
+            $securePart = Str::upper(Str::random(6));
+            $candidate = "REC-{$datePart}-{$sequencePart}-{$securePart}";
+        } while (Fee::where('receipt_number', $candidate)->exists());
+
+        return $candidate;
     }
 }

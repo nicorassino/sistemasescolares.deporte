@@ -5,9 +5,12 @@ namespace App\Livewire\Admin;
 use App\Mail\PaymentApprovedMail;
 use App\Models\Group;
 use App\Models\Payment;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -98,23 +101,53 @@ class TreasuryPanel extends Component
             ->with(['fee.student', 'tutor.user'])
             ->findOrFail($paymentId);
 
+        $fee = $payment->fee;
+
+        if (! $fee->receipt_number) {
+            $fee->receipt_number = $this->generateReceiptNumber($fee->id);
+        }
+
         $payment->update([
             'status' => 'approved',
             'reviewed_by' => Auth::id(),
             'reviewed_at' => now(),
         ]);
 
-        $payment->fee->update([
-            'status' => 'paid',
-            'paid_at' => now(),
-        ]);
+        $fee->status = 'paid';
+        $fee->paid_at = Carbon::now();
+        $fee->save();
 
         $tutorEmail = $payment->tutor->user?->email;
-        if ($tutorEmail) {
-            Mail::to($tutorEmail)->send(new PaymentApprovedMail($payment->fee));
+        if (! $tutorEmail) {
+            session()->flash('warning', 'Pago aprobado, pero no se envió correo: el tutor no tiene email configurado.');
+            return;
         }
 
-        session()->flash('status', 'Pago aprobado correctamente.');
+        try {
+            Mail::to($tutorEmail)->send(new PaymentApprovedMail($payment->fee));
+            session()->flash('status', 'Pago aprobado y correo enviado correctamente.');
+        } catch (\Throwable $e) {
+            Log::error('Error enviando PaymentApprovedMail desde tesorería', [
+                'payment_id' => $payment->id,
+                'tutor_email' => $tutorEmail,
+                'exception' => $e->getMessage(),
+            ]);
+
+            session()->flash('warning', 'Pago aprobado, pero no se pudo enviar el correo. Revisá la configuración SMTP y logs.');
+        }
+    }
+
+    protected function generateReceiptNumber(int $feeId): string
+    {
+        $datePart = now()->format('Ymd');
+        $sequencePart = str_pad((string) $feeId, 6, '0', STR_PAD_LEFT);
+
+        do {
+            $securePart = Str::upper(Str::random(6));
+            $candidate = "REC-{$datePart}-{$sequencePart}-{$securePart}";
+        } while (\App\Models\Fee::where('receipt_number', $candidate)->exists());
+
+        return $candidate;
     }
 
     public function rejectPayment(int $paymentId): void

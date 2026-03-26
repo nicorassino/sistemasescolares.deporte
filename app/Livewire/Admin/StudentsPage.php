@@ -175,7 +175,8 @@ class StudentsPage extends Component
             $user = User::create([
                 'name' => trim($this->new_tutor_first_name . ' ' . $this->new_tutor_last_name),
                 'email' => $this->new_tutor_email,
-                'password' => Hash::make('pasepase'),
+                'password' => Hash::make('juvefutbol'),
+                'must_change_password' => true,
                 'role' => 'tutor',
                 'is_active' => true,
             ]);

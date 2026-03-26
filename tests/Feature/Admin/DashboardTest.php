@@ -40,6 +40,9 @@ class DashboardTest extends TestCase
     /** @test */
     public function la_ruta_admin_renderiza_correctamente(): void
     {
+        $admin = $this->adminUser();
+        $this->actingAs($admin);
+
         $response = $this->get('/admin');
 
         $response->assertStatus(200);
@@ -83,6 +86,7 @@ class DashboardTest extends TestCase
             'fee_id' => $fee->id,
             'tutor_id' => $tutor->id,
             'amount_reported' => 5000,
+            'paid_on_date' => now(),
             'status' => 'pending_review',
         ]);
 
@@ -116,7 +120,8 @@ class DashboardTest extends TestCase
         ]);
 
         Livewire::test(\App\Livewire\Admin\AdminDashboard::class)
-            ->assertSee('Última cuota generada');
+            ->assertSee('Última cuota generada')
+            ->assertSee('Marzo 2026');
     }
 
     /** @test */

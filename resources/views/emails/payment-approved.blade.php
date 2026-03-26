@@ -18,10 +18,26 @@
     <p><strong>Alumno:</strong> {{ $fee->student->last_name }}, {{ $fee->student->first_name }}</p>
     <p><strong>Concepto:</strong> {{ \Carbon\Carbon::createFromFormat('Y-m', $fee->period)->translatedFormat('F Y') }}</p>
     <p><strong>Monto:</strong> $ {{ number_format($fee->amount, 2, ',', '.') }}</p>
-    <p>Podés descargar tu recibo en PDF desde el siguiente enlace:</p>
-    <p>
-        <a href="{{ $receiptUrl }}" class="button">Descargar recibo PDF</a>
+    <p>Tu comprobante quedó guardado y podés descargarlo desde el Portal de Padres.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 16px 0 12px;">
+        <tr>
+            <td align="center" bgcolor="#2563eb" style="border-radius:8px;">
+                <a
+                    href="https://juvefutbol.institutojuvenilia.edu.ar"
+                    style="display:inline-block; padding:12px 24px; font-size:14px; font-weight:bold; color:#ffffff; text-decoration:none; border-radius:8px;"
+                >
+                    Ir al Portal de Padres
+                </a>
+            </td>
+        </tr>
+    </table>
+    <p style="font-size: 12px; color: #6b7280;">
+        Si el botón no se visualiza correctamente, ingresá directamente a:
+        <a href="https://juvefutbol.institutojuvenilia.edu.ar" style="color:#2563eb; text-decoration:underline;">
+            juvefutbol.institutojuvenilia.edu.ar
+        </a>
     </p>
+    <p>Para consultas administrativas, escribinos a <strong>juvefutbol@institutojuvenilia.edu.ar</strong>.</p>
     <p class="footer">Escuela de Deportes Juvenilia</p>
 </body>
 </html>

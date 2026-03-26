@@ -27,6 +27,15 @@ class StudentsPageTest extends TestCase
     // Helpers
     // -------------------------------------------------------------------------
 
+    protected function makeGroup(): Group
+    {
+        return Group::create([
+            'name' => 'Grupo Test',
+            'year' => 2026,
+            'is_active' => true,
+        ]);
+    }
+
     protected function makeStudent(array $overrides = []): Student
     {
         return Student::create(array_merge([
@@ -59,6 +68,9 @@ class StudentsPageTest extends TestCase
     /** @test */
     public function la_ruta_alumnos_renderiza_correctamente(): void
     {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+
         $response = $this->get('/admin/alumnos');
 
         $response->assertStatus(200);
@@ -83,12 +95,12 @@ class StudentsPageTest extends TestCase
     public function el_filtro_busca_por_apellido(): void
     {
         $this->makeStudent(['first_name' => 'Luis', 'last_name' => 'Mendoza', 'dni' => '33333333']);
-        $this->makeStudent(['first_name' => 'Otro', 'last_name' => 'Apellido', 'dni' => '44444444']);
+        $this->makeStudent(['first_name' => 'Otro', 'last_name' => 'Zambrano', 'dni' => '44444444']);
 
         Livewire::test(StudentsPage::class)
             ->set('search', 'Mendoza')
             ->assertSee('Mendoza')
-            ->assertDontSee('Apellido');
+            ->assertDontSee('Zambrano');
     }
 
     /** @test */
@@ -107,12 +119,12 @@ class StudentsPageTest extends TestCase
     public function el_filtro_busca_por_dni(): void
     {
         $this->makeStudent(['first_name' => 'Diego', 'last_name' => 'Vargas', 'dni' => '99887766']);
-        $this->makeStudent(['first_name' => 'Otro', 'last_name' => 'Alumno', 'dni' => '11223344']);
+        $this->makeStudent(['first_name' => 'Otro', 'last_name' => 'Silva', 'dni' => '11223344']);
 
         Livewire::test(StudentsPage::class)
             ->set('search', '99887766')
             ->assertSee('Vargas')
-            ->assertDontSee('Alumno');
+            ->assertDontSee('11223344');
     }
 
     /** @test */
@@ -135,12 +147,14 @@ class StudentsPageTest extends TestCase
     public function puede_crear_alumno_con_datos_validos_y_tutor_existente(): void
     {
         $tutor = $this->makeTutor();
+        $group = $this->makeGroup();
 
         Livewire::test(StudentsPage::class)
             ->set('first_name', 'Nuevo')
             ->set('last_name', 'Alumno')
             ->set('dni', '77665544')
             ->set('birth_date', '2013-03-10')
+            ->set('group_id', $group->id)
             ->set('selected_tutor_ids', [$tutor->id])
             ->call('save')
             ->assertHasNoErrors();
@@ -174,11 +188,14 @@ class StudentsPageTest extends TestCase
     public function despues_de_crear_el_formulario_se_resetea(): void
     {
         $tutor = $this->makeTutor();
+        $group = $this->makeGroup();
 
         Livewire::test(StudentsPage::class)
             ->set('first_name', 'Reset')
             ->set('last_name', 'Test')
             ->set('dni', '55443322')
+            ->set('birth_date', '2014-03-10')
+            ->set('group_id', $group->id)
             ->set('selected_tutor_ids', [$tutor->id])
             ->call('save')
             ->assertSet('first_name', '')
@@ -207,6 +224,14 @@ class StudentsPageTest extends TestCase
     {
         $student = $this->makeStudent(['first_name' => 'Original', 'last_name' => 'Name', 'dni' => '10203050']);
         $tutor = $this->makeTutor();
+        $group = $this->makeGroup();
+
+        // El formulario requiere group_id requerido; se lo seteamos via relación con el grupo
+        $group->students()->attach($student->id, [
+            'from_date' => '2026-01-01',
+            'to_date' => null,
+            'is_current' => true,
+        ]);
 
         Livewire::test(StudentsPage::class)
             ->call('edit', $student->id)
@@ -238,9 +263,9 @@ class StudentsPageTest extends TestCase
     {
         $student = $this->makeStudent(['first_name' => 'Del', 'last_name' => 'Flash', 'dni' => '98765432']);
 
-        Livewire::test(StudentsPage::class)
-            ->call('delete', $student->id)
-            ->assertSessionHas('message');
+        Livewire::test(StudentsPage::class)->call('delete', $student->id);
+
+        $this->assertDatabaseMissing('students', ['id' => $student->id]);
     }
 
     // -------------------------------------------------------------------------
@@ -252,11 +277,14 @@ class StudentsPageTest extends TestCase
     {
         $tutor1 = $this->makeTutor(['dni' => '11112222']);
         $tutor2 = $this->makeTutor(['dni' => '33334444']);
+        $group = $this->makeGroup();
 
         Livewire::test(StudentsPage::class)
             ->set('first_name', 'Multi')
             ->set('last_name', 'Tutor')
             ->set('dni', '55667788')
+            ->set('birth_date', '2015-03-10')
+            ->set('group_id', $group->id)
             ->set('selected_tutor_ids', [$tutor1->id, $tutor2->id])
             ->call('save')
             ->assertHasNoErrors();
@@ -269,7 +297,7 @@ class StudentsPageTest extends TestCase
     /** @test */
     public function puede_crear_un_nuevo_tutor_y_agregarlo(): void
     {
-        $tutorUser = User::factory()->create(['role' => 'tutor', 'email' => 'tutor_nuevo@test.com']);
+        $newTutorEmail = 'tutor_nuevo_creado@test.com';
 
         Livewire::test(StudentsPage::class)
             ->set('first_name', 'Alumno')
@@ -277,10 +305,14 @@ class StudentsPageTest extends TestCase
             ->set('dni', '99887711')
             ->set('new_tutor_first_name', 'Tutor')
             ->set('new_tutor_last_name', 'Nuevo')
-            ->set('new_tutor_email', 'tutor_nuevo@test.com')
+            ->set('new_tutor_email', $newTutorEmail)
             ->set('new_tutor_phone', '1199887766')
             ->set('show_new_tutor', true)
             ->call('addNewTutor')
-            ->assertSessionHas('tutor_message');
+            ->assertHasNoErrors();
+
+        $user = User::where('email', $newTutorEmail)->first();
+        $this->assertNotNull($user);
+        $this->assertDatabaseHas('tutors', ['user_id' => $user->id]);
     }
 }

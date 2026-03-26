@@ -26,6 +26,15 @@ class TreasuryPanelTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // /admin/* está protegido por EnsureAdmin.
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+    }
+
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
@@ -66,6 +75,7 @@ class TreasuryPanelTest extends TestCase
             'fee_id' => $fee->id,
             'tutor_id' => $tutor->id,
             'amount_reported' => 5000,
+            'paid_on_date' => now(),
             'status' => 'pending_review',
         ]);
 
@@ -117,7 +127,7 @@ class TreasuryPanelTest extends TestCase
 
         Livewire::test(TreasuryPanel::class)
             ->call('approvePayment', $setup['payment']->id)
-            ->assertSessionHas('status');
+            ->assertHasNoErrors();
 
         $this->assertDatabaseHas('payments', [
             'id' => $setup['payment']->id,
@@ -128,6 +138,9 @@ class TreasuryPanelTest extends TestCase
             'id' => $setup['fee']->id,
             'status' => 'paid',
         ]);
+
+        $setup['fee']->refresh();
+        $this->assertNotNull($setup['fee']->receipt_number);
     }
 
     /** @test */
@@ -162,7 +175,7 @@ class TreasuryPanelTest extends TestCase
 
         Livewire::test(TreasuryPanel::class)
             ->call('rejectPayment', $setup['payment']->id)
-            ->assertSessionHas('status');
+            ->assertHasNoErrors();
 
         $this->assertDatabaseHas('payments', [
             'id' => $setup['payment']->id,
@@ -188,7 +201,7 @@ class TreasuryPanelTest extends TestCase
 
         Livewire::test(TreasuryPanel::class)
             ->call('resetToPending', $setup['payment']->id)
-            ->assertSessionHas('status');
+            ->assertHasNoErrors();
 
         $this->assertDatabaseHas('payments', [
             'id' => $setup['payment']->id,
@@ -213,7 +226,7 @@ class TreasuryPanelTest extends TestCase
 
         Livewire::test(TreasuryPanel::class)
             ->call('resetToPending', $setup['payment']->id)
-            ->assertSessionHas('status');
+            ->assertHasNoErrors();
 
         $this->assertDatabaseHas('payments', [
             'id' => $setup['payment']->id,
@@ -261,6 +274,7 @@ class TreasuryPanelTest extends TestCase
             'fee_id' => $fee2->id,
             'tutor_id' => $tutor2->id,
             'amount_reported' => 4000,
+            'paid_on_date' => now(),
             'status' => 'pending_review',
         ]);
 

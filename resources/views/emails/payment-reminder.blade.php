@@ -9,8 +9,7 @@
         .title { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
         p { margin: 0 0 12px; }
         .debt { font-size: 16px; font-weight: bold; margin: 16px 0; }
-        .bank { background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0; font-size: 14px; }
-        .bank p { margin: 4px 0; }
+        .button { display: inline-block; margin-top: 16px; padding: 12px 24px; background: #2563eb; color: #fff !important; text-decoration: none; border-radius: 8px; font-weight: bold; }
         .footer { margin-top: 32px; font-size: 12px; color: #6b7280; }
     </style>
 </head>
@@ -25,14 +24,26 @@
         <p><strong>Pagado:</strong> $ {{ number_format($fee->paid_amount, 2, ',', '.') }}</p>
     @endif
     <p class="debt">Deuda: $ {{ number_format((float) $fee->amount - (float) $fee->paid_amount, 2, ',', '.') }}</p>
-    <p>Para abonar por transferencia, utilizá los siguientes datos:</p>
-    <div class="bank">
-        <p><strong>Titular:</strong> Yacono Emanuel Rodrigo</p>
-        <p><strong>CUIT/CUIL:</strong> 23-30658273-9</p>
-        <p><strong>Cuenta:</strong> CA $ 925 0013909602</p>
-        <p><strong>CBU:</strong> 0200925811000013909626</p>
-        <p><strong>Alias:</strong> JUVENILIA.FUTBOL.EMA</p>
-    </div>
+    <p>Para realizar el pago, ingresá al portal de padres, iniciá sesión, informá el pago y subí el comprobante desde la aplicación.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 16px 0 12px;">
+        <tr>
+            <td align="center" bgcolor="#2563eb" style="border-radius:8px;">
+                <a
+                    href="https://juvefutbol.institutojuvenilia.edu.ar"
+                    style="display:inline-block; padding:12px 24px; font-size:14px; font-weight:bold; color:#ffffff; text-decoration:none; border-radius:8px;"
+                >
+                    Ir al Portal de Padres
+                </a>
+            </td>
+        </tr>
+    </table>
+    <p style="font-size: 12px; color: #6b7280;">
+        Si el botón no se visualiza correctamente, ingresá directamente a:
+        <a href="https://juvefutbol.institutojuvenilia.edu.ar" style="color:#2563eb; text-decoration:underline;">
+            juvefutbol.institutojuvenilia.edu.ar
+        </a>
+    </p>
+    <p>Si tenés dudas o necesitás ayuda, contactanos en <strong>juvefutbol@institutojuvenilia.edu.ar</strong>.</p>
     <p class="footer">Escuela de Deportes Juvenilia</p>
 </body>
 </html>

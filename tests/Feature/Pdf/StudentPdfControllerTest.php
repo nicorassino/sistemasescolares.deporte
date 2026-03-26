@@ -4,6 +4,7 @@ namespace Tests\Feature\Pdf;
 
 use App\Models\Group;
 use App\Models\Student;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,9 +20,20 @@ class StudentPdfControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Las rutas /admin están protegidas por EnsureAdmin middleware.
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+    }
+
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
+
+    private int $dniCounter = 20000000;
 
     protected function createGroupWithStudents(string $groupName = 'Grupo Listado', int $count = 3): Group
     {
@@ -31,7 +43,8 @@ class StudentPdfControllerTest extends TestCase
             $student = Student::create([
                 'first_name' => "Alumno{$i}",
                 'last_name' => "Apellido{$i}",
-                'dni' => "1234560{$i}",
+                // students.dni es UNIQUE: generamos DNIs distintos por test
+                'dni' => (string) ($this->dniCounter++),
                 'birth_date' => '2010-01-01',
                 'is_active' => true,
                 'scholarship_percentage' => 0,

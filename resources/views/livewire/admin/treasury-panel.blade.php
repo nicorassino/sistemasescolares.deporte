@@ -10,6 +10,12 @@
         </div>
     @endif
 
+    @if(session('warning'))
+        <div class="mb-4 px-4 py-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm">
+            {{ session('warning') }}
+        </div>
+    @endif
+
     <div class="mb-4 flex flex-wrap items-center gap-3">
         <div class="flex flex-wrap items-center gap-2">
             <label class="text-sm font-medium text-gray-700">Año</label>
@@ -171,6 +177,7 @@
                         <th class="px-4 py-3 text-left font-semibold text-gray-700">Tutor</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-700">Monto</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-700">Estado</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">N. recibo</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-700">Revisado por</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-700">Fecha revisión</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-700">Comprobante</th>
@@ -207,6 +214,9 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-gray-700">
+                                {{ $payment->fee?->receipt_number ?? '—' }}
+                            </td>
+                            <td class="px-4 py-3 text-gray-700">
                                 {{ $payment->reviewer?->name ?? '—' }}
                             </td>
                             <td class="px-4 py-3 text-gray-700">
@@ -238,7 +248,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                            <td colspan="9" class="px-4 py-8 text-center text-gray-500">
                                 No hay pagos aprobados o rechazados aún.
                             </td>
                         </tr>

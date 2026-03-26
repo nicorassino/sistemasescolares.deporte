@@ -44,6 +44,14 @@ class TutorLogin extends Component
 
         session()->regenerate();
 
+        if ((bool) $user->must_change_password) {
+            return redirect()->route('tutor.change-password');
+        }
+
+        $user->forceFill([
+            'last_login_at' => now(),
+        ])->save();
+
         return redirect()->route('tutor.dashboard');
     }
 }

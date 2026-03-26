@@ -59,6 +59,11 @@
                 <span class="font-semibold">Filosofía:</span>
                 Creemos que el deporte es una herramienta fundamental para forjar el carácter. Fomentamos el respeto, la disciplina y el compañerismo en cada entrenamiento y competencia. Nuestra meta es preparar a nuestros alumnos para los desafíos del futuro con una base sólida de valores.
             </p>
+            <p class="text-sm text-gray-700 mt-3">
+                <span class="font-semibold">Consultas:</span>
+                Para comunicación administrativa escribinos a
+                <strong>juvefutbol@institutojuvenilia.edu.ar</strong>.
+            </p>
         </div>
     @endif
 
@@ -107,6 +112,10 @@
         @endif
 
         <h2 class="text-base font-semibold text-gray-900 mb-2">Cuotas pendientes</h2>
+        <p class="text-xs text-gray-600 mb-3">
+            Si necesitás ayuda con pagos, escribinos a
+            <strong>juvefutbol@institutojuvenilia.edu.ar</strong>.
+        </p>
 
         @forelse($tutor?->students ?? [] as $student)
             <div class="mb-4">
@@ -116,7 +125,7 @@
 
                 @php
                     $pendingFees = $student->fees->where('status', 'pending');
-                    $paidFees = $student->fees->where('status', 'paid');
+                    $paidFees = $student->fees->where('status', 'paid')->sortByDesc('period');
                 @endphp
 
                 @if($pendingFees->isEmpty())
@@ -126,6 +135,9 @@
                 @else
                     <div class="space-y-3">
                         @foreach($pendingFees as $fee)
+                            @php
+                                $existingPayment = $fee->payments->first();
+                            @endphp
                             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 px-3 py-3 flex flex-col gap-2">
                                 <div class="flex items-center justify-between">
                                     <div>
@@ -153,24 +165,25 @@
                                     class="mt-1 w-full inline-flex items-center justify-center px-3 py-2 rounded-xl bg-orange-500 bg-juvenilia-orange text-white text-sm font-semibold
                                            shadow-sm hover:brightness-110 active:scale-95 transition-all duration-150"
                                 >
-                                    Informar pago
+                                    {{ $existingPayment ? 'Editar pago informado' : 'Informar pago' }}
                                 </button>
                             </div>
                         @endforeach
                     </div>
                 @endif
 
-                @if($paidFees->isNotEmpty())
-                    <div class="mt-3">
-                            <button
-                                type="button"
-                                wire:click="openPaidModal({{ $student->id }})"
-                                class="inline-flex items-center px-3 py-2 rounded-xl border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-50 active:scale-95 transition-all duration-150"
-                            >
-                                Ver cuotas pagadas
-                            </button>
-                    </div>
-                @endif
+                <div class="mt-3">
+                    <button
+                        type="button"
+                        wire:click="openPaidModal({{ $student->id }})"
+                        class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-50 active:scale-95 transition-all duration-150"
+                    >
+                        Ver cuotas pagadas
+                        <span class="inline-flex items-center justify-center min-w-5 h-5 rounded-full bg-gray-100 text-[11px] font-semibold text-gray-700">
+                            {{ $paidFees->count() }}
+                        </span>
+                    </button>
+                </div>
             </div>
         @empty
             <p class="text-sm text-gray-600">Aún no tenés alumnos asignados.</p>
@@ -271,7 +284,10 @@
                                 type="file"
                                 wire:model="paymentProof"
                                 accept="image/jpeg,image/jpg,image/png,application/pdf"
-                                class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-base text-gray-700"
+                                class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-base text-gray-700 bg-white
+                                       file:mr-3 file:rounded-lg file:border file:border-gray-300 file:bg-gray-200 file:px-4 file:py-2.5
+                                       file:text-sm file:font-medium file:text-gray-800 hover:file:bg-gray-300
+                                       cursor-pointer"
                             >
                             <p class="text-[11px] text-gray-500 mt-1">
                                 Formatos permitidos: JPG, PNG o PDF. Tamaño máximo: 2MB.
@@ -315,6 +331,7 @@
             if ($paidFilterYear) {
                 $filteredPaidFees = $filteredPaidFees->filter(fn($fee) => substr($fee->period, 0, 4) == (string) $paidFilterYear);
             }
+            $filteredPaidFees = $filteredPaidFees->sortByDesc('period');
         @endphp
         <div
             class="fixed inset-0 z-40 flex items-center justify-center bg-black/40"
@@ -356,7 +373,7 @@
 
                     @if($filteredPaidFees->isEmpty())
                         <p class="text-xs text-gray-500">
-                            No hay cuotas pagadas para el año seleccionado.
+                            No hay cuotas pagadas registradas para este alumno en el año seleccionado.
                         </p>
                     @else
                         <div class="space-y-2">

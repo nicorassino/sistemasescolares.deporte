@@ -53,17 +53,28 @@
         @else
             <div class="flex gap-2 overflow-x-auto pb-2 pills-scroll snap-x -mx-3 px-3">
                 @foreach($groups as $g)
-                    <button
-                        type="button"
-                        wire:click="$set('selectedGroupId', {{ $g->id }})"
-                        class="snap-start shrink-0 px-4 py-2 rounded-full text-sm font-semibold
-                               transition-all duration-150 active:scale-95
-                               {{ $selectedGroupId == $g->id
-                                  ? 'bg-blue-700 bg-juvenilia-blue text-white shadow-md ring-2 ring-blue-300'
-                                  : 'bg-white text-gray-600 border border-gray-200 hover:border-juvenilia-blue hover:text-juvenilia-blue' }}"
-                    >
-                        {{ $g->name }}
-                    </button>
+                    @if($selectedGroupId == $g->id)
+                        <button
+                            type="button"
+                            wire:click="$set('selectedGroupId', {{ $g->id }})"
+                            class="snap-start shrink-0 px-4 py-2 rounded-full text-sm font-semibold
+                                   transition-all duration-150 active:scale-95
+                                   bg-blue-700 bg-juvenilia-blue text-white shadow-md ring-2 ring-blue-300"
+                        >
+                            {{ $g->name }}
+                        </button>
+                    @else
+                        <button
+                            type="button"
+                            wire:click="$set('selectedGroupId', {{ $g->id }})"
+                            class="snap-start shrink-0 px-4 py-2 rounded-full text-sm font-semibold
+                                   transition-all duration-150 active:scale-95
+                                   bg-white text-gray-600 border border-gray-200
+                                   hover:border-blue-700 hover:text-blue-700"
+                        >
+                            {{ $g->name }}
+                        </button>
+                    @endif
                 @endforeach
             </div>
         @endif
@@ -99,7 +110,7 @@
                                     type="button"
                                     wire:click="openCashModal({{ $student->id }})"
                                     class="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl
-                                           bg-juvenilia-orange text-white text-xs font-bold
+                                           bg-orange-500 bg-juvenilia-orange text-white text-xs font-bold
                                            shadow-sm hover:brightness-110 active:scale-95
                                            transition-all duration-150"
                                 >
@@ -220,7 +231,7 @@
                 </div>
 
                 {{-- Header del modal --}}
-                <div class="bg-juvenilia-blue px-5 py-4 sm:rounded-t-3xl flex items-center justify-between mt-2 sm:mt-0">
+                <div class="bg-blue-700 bg-juvenilia-blue px-5 py-4 sm:rounded-t-3xl flex items-center justify-between mt-2 sm:mt-0">
                     <div class="flex items-center gap-2.5">
                         <div class="p-1.5 bg-white/20 rounded-lg">
                             <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -306,7 +317,7 @@
                                 <button
                                     type="submit"
                                     class="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl
-                                           bg-juvenilia-green text-white font-bold text-base
+                                           bg-green-600 bg-juvenilia-green text-white font-bold text-base
                                            shadow-lg shadow-green-200
                                            hover:brightness-110 active:scale-95
                                            transition-all duration-150"

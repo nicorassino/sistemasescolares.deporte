@@ -5,6 +5,7 @@ namespace App\Mail;
 use App\Models\Fee;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -24,6 +25,9 @@ class PaymentApprovedMail extends Mailable
     {
         return new Envelope(
             subject: 'Recibo de pago acreditado - Juvenilia',
+            replyTo: [
+                new Address('juvefutbol@institutojuvenilia.edu.ar', 'Escuela de Fútbol Instituto Juvenilia'),
+            ],
         );
     }
 

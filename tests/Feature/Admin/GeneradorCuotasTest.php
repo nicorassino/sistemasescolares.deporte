@@ -50,7 +50,10 @@ class GeneradorCuotasTest extends TestCase
     /** @test */
     public function la_ruta_generador_cuotas_renderiza_correctamente(): void
     {
-        $response = $this->get('/admin/generador-cuotas');
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+
+        $response = $this->get('/admin/cuotas/generar');
 
         $response->assertStatus(200);
     }

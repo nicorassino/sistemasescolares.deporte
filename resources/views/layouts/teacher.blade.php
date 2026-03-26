@@ -88,5 +88,10 @@
     </div>
 
     @livewireScripts
+
+    {{-- Forzamos que Tailwind genere CSS de estados dinámicos del TeacherDashboard --}}
+    <div class="hidden">
+        <span class="bg-green-600 bg-red-500 bg-orange-500 bg-blue-700 text-white ring-4 ring-green-300 ring-red-300 ring-blue-300 shadow-md"></span>
+    </div>
 </body>
 </html>

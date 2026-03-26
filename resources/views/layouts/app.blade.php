@@ -42,6 +42,28 @@
                            {{ request()->routeIs('admin.fee-manager') ? 'bg-white text-juvenilia-blue font-semibold shadow-sm' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">Deudas</a>
                     </nav>
 
+                    @auth
+                        @if(auth()->user()?->role === 'admin')
+                            <div class="hidden lg:flex items-center gap-2 shrink-0">
+                                <a
+                                    href="{{ route('admin.change-password') }}"
+                                    class="px-3 py-1.5 rounded-full text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white"
+                                >
+                                    Cambiar clave
+                                </a>
+                                <form action="{{ route('admin.logout') }}" method="POST">
+                                    @csrf
+                                    <button
+                                        type="submit"
+                                        class="px-3 py-1.5 rounded-full text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white"
+                                    >
+                                        Cerrar sesión
+                                    </button>
+                                </form>
+                            </div>
+                        @endif
+                    @endauth
+
                     <button
                         type="button"
                         @click="menuOpen = !menuOpen"
@@ -75,6 +97,27 @@
                            {{ request()->routeIs('admin.treasury') ? 'bg-white text-juvenilia-blue font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white' }}">Revisión de pagos</a>
                         <a href="{{ route('admin.fee-manager') }}" class="px-4 py-2 text-sm
                            {{ request()->routeIs('admin.fee-manager') ? 'bg-white text-juvenilia-blue font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white' }}">Deudas</a>
+
+                        @auth
+                            @if(auth()->user()?->role === 'admin')
+                                <div class="h-px bg-white/10 my-1"></div>
+                                <a
+                                    href="{{ route('admin.change-password') }}"
+                                    class="px-4 py-2 text-sm text-white/90 hover:bg-white/10 hover:text-white"
+                                >
+                                    Cambiar clave
+                                </a>
+                                <form action="{{ route('admin.logout') }}" method="POST" class="px-0">
+                                    @csrf
+                                    <button
+                                        type="submit"
+                                        class="w-full text-left px-4 py-2 text-sm text-white/90 hover:bg-white/10 hover:text-white"
+                                    >
+                                        Cerrar sesión
+                                    </button>
+                                </form>
+                            @endif
+                        @endauth
                     </div>
                 </div>
             </div>

@@ -21,6 +21,14 @@ class DebtPdfControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+    }
+
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------

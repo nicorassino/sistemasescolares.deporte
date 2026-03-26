@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Livewire\Admin\FeeManager;
+use App\Mail\PaymentReminderMail;
 use App\Models\Fee;
 use App\Models\Group;
 use App\Models\Student;
@@ -77,6 +78,9 @@ class FeeManagerTest extends TestCase
     /** @test */
     public function la_ruta_deudas_renderiza_correctamente(): void
     {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+
         $response = $this->get('/admin/deudas');
 
         $response->assertStatus(200);
@@ -213,7 +217,13 @@ class FeeManagerTest extends TestCase
 
         Livewire::test(FeeManager::class)
             ->call('sendReminder', $setup['fee']->id)
-            ->assertSessionHas('status');
+            ->assertHasNoErrors();
+
+        Mail::assertSent(PaymentReminderMail::class);
+
+        $this->assertDatabaseHas('fees', [
+            'id' => $setup['fee']->id,
+        ]);
     }
 
     /** @test */
@@ -228,7 +238,9 @@ class FeeManagerTest extends TestCase
 
         Livewire::test(FeeManager::class)
             ->call('sendReminder', $setup['fee']->id)
-            ->assertSessionHas('error');
+            ->assertHasNoErrors();
+
+        Mail::assertNothingSent();
     }
 
     /** @test */
@@ -240,6 +252,8 @@ class FeeManagerTest extends TestCase
 
         Livewire::test(FeeManager::class)
             ->call('sendReminder', $setup['fee']->id)
-            ->assertSessionHas('error');
+            ->assertHasNoErrors();
+
+        Mail::assertNothingSent();
     }
 }

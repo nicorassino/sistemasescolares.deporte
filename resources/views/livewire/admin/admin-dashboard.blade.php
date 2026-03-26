@@ -22,7 +22,7 @@
             <div class="bg-white rounded-xl shadow border border-gray-100 p-4">
                 <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Última cuota generada</p>
                 <p class="text-lg font-bold text-gray-900 mt-1">
-                    {{ \Carbon\Carbon::createFromFormat('Y-m', $lastPeriodStats->period)->translatedFormat('F Y') }}
+                    {{ \Illuminate\Support\Str::ucfirst(\Carbon\Carbon::createFromFormat('Y-m', $lastPeriodStats->period)->locale('es')->isoFormat('MMMM YYYY')) }}
                 </p>
                 <p class="text-sm text-gray-600 mt-1">
                     <span class="font-semibold text-green-600">{{ $lastPeriodStats->paid }}</span> pagadas
@@ -66,7 +66,7 @@
             <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                 <h2 class="text-base font-semibold text-gray-900">Última cuota por grupo</h2>
                 @if($lastPeriodStats)
-                    <span class="text-xs text-gray-500">{{ \Carbon\Carbon::createFromFormat('Y-m', $lastPeriodStats->period)->translatedFormat('F Y') }}</span>
+                    <span class="text-xs text-gray-500">{{ \Illuminate\Support\Str::ucfirst(\Carbon\Carbon::createFromFormat('Y-m', $lastPeriodStats->period)->locale('es')->isoFormat('MMMM YYYY')) }}</span>
                 @endif
             </div>
             <div class="divide-y divide-gray-50 max-h-64 overflow-y-auto">

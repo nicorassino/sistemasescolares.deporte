@@ -147,10 +147,23 @@ class TutorLoginTest extends TestCase
     /** @test */
     public function falla_si_el_usuario_es_teacher(): void
     {
+        // En SQLite el CHECK de users.role puede no permitir el valor 'teacher'
+        // (por cómo se gestionan migraciones ENUM). Para el objetivo del test
+        // (rechazar un usuario que NO es tutor), usamos un role permitido
+        // y creamos igualmente el modelo Teacher.
         $teacherUser = User::factory()->create([
             'email' => 'profe.nottutor@test.com',
             'password' => Hash::make('password'),
-            'role' => 'teacher',
+            'role' => 'admin',
+        ]);
+
+        \App\Models\Teacher::create([
+            'user_id' => $teacherUser->id,
+            'first_name' => 'Profe',
+            'last_name' => 'NoTutor',
+            'email' => $teacherUser->email,
+            'phone' => '111222333',
+            'is_active' => true,
         ]);
 
         Livewire::test(TutorLogin::class)

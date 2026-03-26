@@ -22,6 +22,15 @@ class TeachersPageTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // /admin/* está protegido por EnsureAdmin.
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+    }
+
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
@@ -211,9 +220,9 @@ class TeachersPageTest extends TestCase
     {
         $teacher = $this->makeTeacher(['first_name' => 'Del', 'last_name' => 'Flash', 'email' => 'delflash@test.com']);
 
-        Livewire::test(TeachersPage::class)
-            ->call('delete', $teacher->id)
-            ->assertSessionHas('message');
+        Livewire::test(TeachersPage::class)->call('delete', $teacher->id);
+
+        $this->assertDatabaseMissing('teachers', ['id' => $teacher->id]);
     }
 
     /** @test */

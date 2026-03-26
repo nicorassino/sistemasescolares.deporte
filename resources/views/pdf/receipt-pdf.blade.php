@@ -34,12 +34,16 @@
 
     <table>
         <tr>
+            <th>N. de recibo</th>
+            <td>{{ $receiptNumber }}</td>
+        </tr>
+        <tr>
             <th>Alumno</th>
             <td>{{ $fee->student->last_name }}, {{ $fee->student->first_name }}</td>
         </tr>
         <tr>
             <th>Concepto</th>
-            <td>{{ \Carbon\Carbon::createFromFormat('Y-m', $fee->period)->translatedFormat('F Y') }}</td>
+            <td>{{ \Illuminate\Support\Str::ucfirst(\Carbon\Carbon::createFromFormat('Y-m', $fee->period)->locale('es')->isoFormat('MMMM YYYY')) }}</td>
         </tr>
         <tr>
             <th>Monto</th>
@@ -56,7 +60,7 @@
     </table>
 
     <div class="footer">
-        Documento generado el {{ now()->format('d/m/Y H:i') }} — Juvenilia
+        Documento generado el {{ now()->format('d/m/Y H:i') }} — Juvenilia — Verificable con N. de recibo en administración
     </div>
 </body>
 </html>
