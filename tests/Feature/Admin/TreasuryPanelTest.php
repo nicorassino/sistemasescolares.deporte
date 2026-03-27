@@ -10,6 +10,7 @@ use App\Models\Student;
 use App\Models\Tutor;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Mail\PaymentApprovedMail;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -137,6 +138,7 @@ class TreasuryPanelTest extends TestCase
         $this->assertDatabaseHas('fees', [
             'id' => $setup['fee']->id,
             'status' => 'paid',
+            'paid_amount' => 5000,
         ]);
 
         $setup['fee']->refresh();
@@ -183,6 +185,48 @@ class TreasuryPanelTest extends TestCase
         ]);
     }
 
+    /** @test */
+    public function aprobar_transferencia_parcial_deja_cuota_en_partial(): void
+    {
+        Mail::fake();
+        $setup = $this->makePaymentSetup();
+        $setup['payment']->update(['amount_reported' => 2000]);
+
+        Livewire::test(TreasuryPanel::class)
+            ->call('approvePayment', $setup['payment']->id)
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('fees', [
+            'id' => $setup['fee']->id,
+            'status' => 'partial',
+            'paid_amount' => 2000,
+        ]);
+        Mail::assertSent(PaymentApprovedMail::class);
+    }
+
+    /** @test */
+    public function aprobar_sobrepago_acredita_excedente_en_billetera(): void
+    {
+        Mail::fake();
+        $setup = $this->makePaymentSetup();
+        $setup['payment']->update(['amount_reported' => 6200]);
+
+        Livewire::test(TreasuryPanel::class)
+            ->call('approvePayment', $setup['payment']->id)
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('fees', [
+            'id' => $setup['fee']->id,
+            'status' => 'paid',
+            'paid_amount' => 5000,
+        ]);
+
+        $setup['tutor']->refresh();
+        $this->assertEquals(1200.0, (float) $setup['tutor']->wallet_balance);
+
+        Mail::assertSent(PaymentApprovedMail::class);
+    }
+
     // -------------------------------------------------------------------------
     // Tests de reversión de pagos
     // -------------------------------------------------------------------------
@@ -195,9 +239,10 @@ class TreasuryPanelTest extends TestCase
 
         $setup = $this->makePaymentSetup();
 
-        // Primero aprobar el pago
-        $setup['payment']->update(['status' => 'approved', 'reviewed_by' => $admin->id, 'reviewed_at' => now()]);
-        $setup['fee']->update(['status' => 'paid', 'paid_at' => now()]);
+        // Primero aprobar el pago con el propio flujo para aplicar saldos
+        Livewire::test(TreasuryPanel::class)
+            ->call('approvePayment', $setup['payment']->id)
+            ->assertHasNoErrors();
 
         Livewire::test(TreasuryPanel::class)
             ->call('resetToPending', $setup['payment']->id)
@@ -211,6 +256,48 @@ class TreasuryPanelTest extends TestCase
         $this->assertDatabaseHas('fees', [
             'id' => $setup['fee']->id,
             'status' => 'pending',
+            'paid_amount' => 0,
+        ]);
+    }
+
+    /** @test */
+    public function resetear_aprobado_recalcula_parcial_con_otros_pagos_aprobados(): void
+    {
+        Mail::fake();
+        $setup = $this->makePaymentSetup();
+
+        $paymentTwo = Payment::create([
+            'fee_id' => $setup['fee']->id,
+            'tutor_id' => $setup['tutor']->id,
+            'amount_reported' => 1500,
+            'paid_on_date' => now(),
+            'status' => 'pending_review',
+        ]);
+
+        Livewire::test(TreasuryPanel::class)
+            ->call('approvePayment', $setup['payment']->id)
+            ->call('approvePayment', $paymentTwo->id)
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('fees', [
+            'id' => $setup['fee']->id,
+            'status' => 'paid',
+            'paid_amount' => 5000,
+        ]);
+
+        Livewire::test(TreasuryPanel::class)
+            ->call('resetToPending', $setup['payment']->id)
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('payments', [
+            'id' => $setup['payment']->id,
+            'status' => 'pending_review',
+        ]);
+
+        $this->assertDatabaseHas('fees', [
+            'id' => $setup['fee']->id,
+            'status' => 'partial',
+            'paid_amount' => 1500,
         ]);
     }
 

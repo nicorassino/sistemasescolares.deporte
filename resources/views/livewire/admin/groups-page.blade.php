@@ -6,6 +6,11 @@
             {{ session('message') }}
         </div>
     @endif
+    @if (session()->has('error'))
+        <div class="mb-4 p-3 rounded bg-red-100 text-red-800 text-sm" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
+            {{ session('error') }}
+        </div>
+    @endif
 
     <div class="bg-white rounded-lg shadow p-4 mb-6" wire:key="group-form-{{ $editing?->id ?? 'new' }}">
         <h2 class="text-lg font-medium mb-3">
@@ -97,11 +102,30 @@
                             </span>
                         </td>
                         <td class="px-3 py-2 text-right space-x-2">
-                            <button type="button" wire:click.prevent="edit({{ $group->id }})" class="text-blue-600 text-xs hover:underline">Editar</button>
-                            <button type="button" class="text-red-600 text-xs hover:underline"
-                                onclick="if(confirm('¿Eliminar este grupo?')) @this.call('delete', {{ $group->id }})">
-                                Eliminar
+                            <button
+                                type="button"
+                                wire:click.prevent="edit({{ $group->id }})"
+                                class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition cursor-pointer"
+                            >
+                                Editar
                             </button>
+                            @if($group->students_count > 0 || $group->teacher_id)
+                                <button
+                                    type="button"
+                                    disabled
+                                    title="No se puede eliminar: tiene alumnos o profesor asignado."
+                                    class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-gray-400 bg-gray-100 cursor-not-allowed"
+                                >
+                                    Eliminar
+                                </button>
+                            @else
+                                <button
+                                    type="button"
+                                    class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400 transition cursor-pointer"
+                                    onclick="if(confirm('¿Eliminar este grupo?')) @this.call('delete', {{ $group->id }})">
+                                    Eliminar
+                                </button>
+                            @endif
                         </td>
                     </tr>
                 @empty

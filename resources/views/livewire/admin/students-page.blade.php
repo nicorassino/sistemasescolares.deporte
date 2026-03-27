@@ -5,28 +5,8 @@
             <p class="text-sm text-gray-600">Alta y edición rápida con asignación de tutor y grupo.</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
-            <div class="flex items-center gap-2">
-                <label class="text-xs text-gray-600">PDF listado:</label>
-                <select
-                    wire:model.live="pdf_group_id"
-                    class="border border-gray-300 rounded-md px-2 py-1.5 text-sm"
-                >
-                    <option value="">Todos los grupos</option>
-                    @foreach($groups as $g)
-                        <option value="{{ $g->id }}">{{ $g->name }}</option>
-                    @endforeach
-                </select>
-                <a
-                    href="{{ route('admin.students-pdf.by-group') }}{{ (int) $pdf_group_id > 0 ? '?group=' . (int) $pdf_group_id : '' }}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="inline-flex items-center px-3 py-1.5 rounded-md border border-gray-300 text-xs text-gray-700 hover:bg-gray-50"
-                >
-                    Ver PDF
-                </a>
-            </div>
             @if($editing)
-                <button wire:click="create" class="text-sm text-blue-700 hover:underline">
+                <button wire:click="create" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition cursor-pointer">
                     Nuevo alumno
                 </button>
             @endif
@@ -113,7 +93,7 @@
         <div class="bg-white rounded-lg shadow p-5">
             <div class="flex items-center justify-between mb-3">
                 <h2 class="text-lg font-medium">Tutor</h2>
-                <button type="button" wire:click="toggleNewTutor" class="text-sm text-blue-700 hover:underline">
+                <button type="button" wire:click="toggleNewTutor" class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition cursor-pointer">
                     {{ $show_new_tutor ? 'Buscar tutor existente' : 'Crear nuevo tutor' }}
                 </button>
             </div>
@@ -151,7 +131,7 @@
                                     @endforeach
                                 </ul>
                             </div>
-                            <button type="button" wire:click="clearTutor" class="text-[11px] text-blue-700 hover:underline">
+                            <button type="button" wire:click="clearTutor" class="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition cursor-pointer">
                                 Quitar todos
                             </button>
                         </div>
@@ -182,24 +162,35 @@
                                         <button
                                             type="button"
                                             wire:click="selectTutor({{ $tutor->id }})"
-                                            class="text-blue-700 hover:underline"
+                                            class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition cursor-pointer"
                                         >
                                             {{ in_array($tutor->id, $selected_tutor_ids ?? []) ? 'Quitar' : 'Agregar' }}
                                         </button>
                                         <button
                                             type="button"
                                             wire:click="startEditingTutor({{ $tutor->id }})"
-                                            class="text-gray-700 hover:underline"
+                                            class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 transition cursor-pointer"
                                         >
                                             Editar
                                         </button>
-                                        <button
-                                            type="button"
-                                            class="text-red-600 hover:underline"
-                                            onclick="if (confirm('¿Eliminar este tutor? Solo se puede si no tiene alumnos asignados.')) { @this.call('deleteTutor', {{ $tutor->id }}) }"
-                                        >
-                                            Eliminar
-                                        </button>
+                                        @if(($tutor->students_count ?? 0) > 0)
+                                            <button
+                                                type="button"
+                                                disabled
+                                                title="No se puede eliminar: tiene alumnos asignados."
+                                                class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-gray-400 bg-gray-100 cursor-not-allowed"
+                                            >
+                                                Eliminar
+                                            </button>
+                                        @else
+                                            <button
+                                                type="button"
+                                                class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400 transition cursor-pointer"
+                                                onclick="if (confirm('¿Eliminar este tutor? Solo se puede si no tiene alumnos asignados.')) { @this.call('deleteTutor', {{ $tutor->id }}) }"
+                                            >
+                                                Eliminar
+                                            </button>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -314,6 +305,57 @@
         </div>
     </div>
 
+    <div class="mb-6 flex flex-col gap-2 bg-white border border-gray-200 rounded-lg px-3 py-3">
+        <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Impresiones</div>
+        <div class="flex flex-wrap items-center gap-2">
+            <label class="text-xs text-gray-600">Listado por grupo:</label>
+            <select
+                wire:model.live="pdf_group_id"
+                class="border border-gray-300 rounded-md px-2 py-1.5 text-sm"
+            >
+                <option value="">Todos los grupos</option>
+                @foreach($groups as $g)
+                    <option value="{{ $g->id }}">{{ $g->name }}</option>
+                @endforeach
+            </select>
+            <a
+                href="{{ route('admin.students-pdf.by-group') }}{{ (int) $pdf_group_id > 0 ? '?group=' . (int) $pdf_group_id : '' }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center px-3 py-1.5 rounded-md border border-gray-300 text-xs text-gray-700 hover:bg-gray-100"
+            >
+                Ver PDF alumnos
+            </a>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <label class="text-xs text-gray-600">Asistencia mensual:</label>
+            <select
+                wire:model.live="pdf_attendance_group_id"
+                class="border border-gray-300 rounded-md px-2 py-1.5 text-sm"
+            >
+                <option value="">Seleccionar grupo</option>
+                @foreach($groups as $g)
+                    <option value="{{ $g->id }}">{{ $g->name }}</option>
+                @endforeach
+            </select>
+            <input
+                type="month"
+                wire:model.live="pdf_attendance_month"
+                class="border border-gray-300 rounded-md px-2 py-1.5 text-sm"
+            >
+            @if((int) $pdf_attendance_group_id > 0)
+                <a
+                    href="{{ route('admin.attendance-pdf.by-group-month', ['group' => (int) $pdf_attendance_group_id, 'month' => $pdf_attendance_month]) }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center px-3 py-1.5 rounded-md border border-gray-300 text-xs text-gray-700 hover:bg-gray-100"
+                >
+                    Ver PDF asistencia
+                </a>
+            @endif
+        </div>
+    </div>
+
     <div class="bg-white rounded-lg shadow overflow-x-auto">
         <div class="px-3 py-2 border-b flex items-center justify-between gap-3">
             <div class="text-sm font-medium text-gray-700">
@@ -375,13 +417,13 @@
                             <button
                                 type="button"
                                 wire:click="edit({{ $student->id }})"
-                                class="text-blue-600 text-xs"
+                                class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition cursor-pointer"
                             >
                                 Editar
                             </button>
                             <button
                                 type="button"
-                                class="text-red-600 text-xs"
+                                class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400 transition cursor-pointer"
                                 onclick="if (confirm('¿Eliminar este alumno? Esta acción no se puede deshacer.')) { @this.call('delete', {{ $student->id }}) }"
                             >
                                 Eliminar

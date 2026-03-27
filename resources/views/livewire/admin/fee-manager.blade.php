@@ -134,6 +134,16 @@
                                 @else
                                     <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700">Pendiente</span>
                                 @endif
+                                @if($fee->payments->isNotEmpty())
+                                    <div class="mt-1 text-[11px] text-gray-600 space-y-0.5">
+                                        @foreach($fee->payments as $p)
+                                            <div>
+                                                Pago {{ $p->paid_on_date?->format('d/m/Y') ?? 's/f' }}:
+                                                $ {{ number_format((float) $p->amount_reported, 2, ',', '.') }}
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex flex-col items-end gap-1">
@@ -162,7 +172,7 @@
                                         <button
                                             type="button"
                                             wire:click="sendReminder({{ $fee->id }})"
-                                            class="inline-flex items-center px-3 py-1.5 rounded-md bg-amber-600 text-white text-xs font-medium hover:bg-amber-700"
+                                            class="inline-flex items-center px-3 py-1.5 rounded-md bg-amber-600 text-white text-xs font-medium hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400 transition cursor-pointer"
                                         >
                                             Enviar recordatorio
                                         </button>

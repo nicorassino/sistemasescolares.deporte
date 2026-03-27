@@ -46,24 +46,32 @@
     </nav>
 
     @if($activeSection === 'escuela')
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-            <h2 class="text-base font-semibold text-gray-900 mb-3">Institucional</h2>
-            <div class="flex items-center justify-center gap-4 mb-4">
-                <img src="{{ asset('IMG/logo_juvenilia.jpeg') }}" alt="Logo Juvenilia" class="h-14 w-auto object-contain">
-                <img src="{{ asset('IMG/logodepte.jpeg') }}" alt="Logo Deportivo" class="h-14 w-auto object-contain rounded-lg">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            {{-- Hero de la escuela de fútbol --}}
+            <div class="flex flex-col items-center gap-3 py-8 px-6 bg-gradient-to-b from-blue-900 to-blue-700">
+                <img
+                    src="{{ asset('IMG/logodepte.png') }}"
+                    alt="Escuela de Fútbol Juvenilia"
+                    class="h-32 w-auto object-contain drop-shadow-xl"
+                >
+                <p class="text-white/80 text-sm font-medium text-center">Escuela de Fútbol</p>
             </div>
-            <p class="text-sm text-gray-700 mb-2">
-                En la Escuela de Deportes Juvenilia, nos dedicamos a la formación integral de niños y jóvenes a través del deporte. Nuestro enfoque principal está en el desarrollo de habilidades físicas, el trabajo en equipo y la diversión sana. Formamos deportistas, pero sobre todo, formamos personas.
-            </p>
-            <p class="text-sm text-gray-700">
-                <span class="font-semibold">Filosofía:</span>
-                Creemos que el deporte es una herramienta fundamental para forjar el carácter. Fomentamos el respeto, la disciplina y el compañerismo en cada entrenamiento y competencia. Nuestra meta es preparar a nuestros alumnos para los desafíos del futuro con una base sólida de valores.
-            </p>
-            <p class="text-sm text-gray-700 mt-3">
-                <span class="font-semibold">Consultas:</span>
-                Para comunicación administrativa escribinos a
-                <strong>juvefutbol@institutojuvenilia.edu.ar</strong>.
-            </p>
+
+            <div class="p-5 space-y-3">
+                <p class="text-sm text-gray-700 leading-relaxed">
+                    En la Escuela de Deportes Juvenilia, nos dedicamos a la formación integral de niños y jóvenes a través del deporte. Nuestro enfoque principal está en el desarrollo de habilidades físicas, el trabajo en equipo y la diversión sana. Formamos deportistas, pero sobre todo, formamos personas.
+                </p>
+                <p class="text-sm text-gray-700 leading-relaxed">
+                    <span class="font-semibold">Filosofía:</span>
+                    Creemos que el deporte es una herramienta fundamental para forjar el carácter. Fomentamos el respeto, la disciplina y el compañerismo en cada entrenamiento y competencia. Nuestra meta es preparar a nuestros alumnos para los desafíos del futuro con una base sólida de valores.
+                </p>
+                <p class="text-sm text-gray-700 leading-relaxed">
+                    <span class="font-semibold">Consultas:</span>
+                    Para comunicación administrativa escribinos a
+                    <strong>juvefutbol@institutojuvenilia.edu.ar</strong>.
+                </p>
+
+            </div>
         </div>
     @endif
 
@@ -78,7 +86,7 @@
                         <article class="border border-gray-100 rounded-xl overflow-hidden shadow-sm">
                             @if($announcement->image_path)
                                 <img
-                                    src="{{ asset('storage/'.$announcement->image_path) }}"
+                                    src="{{ route('announcements.image', $announcement) }}"
                                     alt="Imagen de la novedad"
                                     class="w-full h-40 object-cover"
                                 >
@@ -124,7 +132,7 @@
                 </h3>
 
                 @php
-                    $pendingFees = $student->fees->where('status', 'pending');
+                    $pendingFees = $student->fees->whereIn('status', ['pending', 'partial']);
                     $paidFees = $student->fees->where('status', 'paid')->sortByDesc('period');
                 @endphp
 
@@ -165,7 +173,7 @@
                                     class="mt-1 w-full inline-flex items-center justify-center px-3 py-2 rounded-xl bg-orange-500 bg-juvenilia-orange text-white text-sm font-semibold
                                            shadow-sm hover:brightness-110 active:scale-95 transition-all duration-150"
                                 >
-                                    {{ $existingPayment ? 'Editar pago informado' : 'Informar pago' }}
+                                    {{ $existingPayment ? 'Agregar comprobante de pago' : 'Informar pago' }}
                                 </button>
                             </div>
                         @endforeach
@@ -266,6 +274,23 @@
                     </div>
 
                     <form wire:submit.prevent="submitPaymentProof" class="space-y-3">
+                        @php
+                            $selectedFee = optional($tutor?->students)->flatMap(fn($s) => $s->fees)->firstWhere('id', $selectedFeeId);
+                            $remainingDebt = $selectedFee ? max((float) $selectedFee->amount - (float) $selectedFee->paid_amount, 0) : 0;
+                            $paymentHistory = $selectedFee
+                                ? $selectedFee->payments
+                                    ->where('tutor_id', $tutor?->id)
+                                    ->sortByDesc('id')
+                                : collect();
+                        @endphp
+
+                        @if($selectedFee)
+                            <div class="rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs text-gray-700 space-y-1">
+                                <p><span class="font-semibold">Deuda actual:</span> $ {{ number_format($remainingDebt, 2, ',', '.') }}</p>
+                                <p><span class="font-semibold">Sugerencia:</span> ingresá el saldo pendiente para cerrar la cuota.</p>
+                            </div>
+                        @endif
+
                         <div>
                             <label for="transfer_sender_name" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Titular de la cuenta origen (Quien transfiere)</label>
                             <input
@@ -276,6 +301,19 @@
                                 class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-base focus:border-juvenilia-blue focus:ring-juvenilia-blue"
                             >
                             @error('transfer_sender_name') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="transfer_amount" class="block text-sm font-medium text-gray-700 mb-1">Monto transferido</label>
+                            <input
+                                id="transfer_amount"
+                                type="text"
+                                inputmode="decimal"
+                                wire:model.defer="transfer_amount"
+                                placeholder="Ej: 12000,50"
+                                class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-base focus:border-juvenilia-blue focus:ring-juvenilia-blue"
+                            >
+                            @error('transfer_amount') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
@@ -294,6 +332,24 @@
                             </p>
                             @error('paymentProof') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
+
+                        @if($paymentHistory->isNotEmpty())
+                            <div class="rounded-xl border border-gray-200 p-3">
+                                <p class="text-xs font-semibold text-gray-700 mb-2">Transferencias enviadas para esta cuota</p>
+                                <div class="space-y-1">
+                                    @foreach($paymentHistory->take(5) as $p)
+                                        <div class="text-[11px] text-gray-600 flex items-center justify-between gap-2">
+                                            <span>
+                                                {{ $p->created_at?->format('d/m/Y H:i') }} - $ {{ number_format((float) $p->amount_reported, 2, ',', '.') }}
+                                            </span>
+                                            <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
+                                                {{ $p->status === 'pending_review' ? 'En revisión' : ($p->status === 'approved' ? 'Aprobado' : 'Rechazado') }}
+                                            </span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
 
                         <div class="pt-1 flex gap-2">
                             <button

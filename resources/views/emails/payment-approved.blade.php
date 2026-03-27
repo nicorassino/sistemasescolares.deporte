@@ -9,15 +9,22 @@
         .title { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
         p { margin: 0 0 12px; }
         .button { display: inline-block; margin-top: 16px; padding: 12px 24px; background: #2563eb; color: #fff !important; text-decoration: none; border-radius: 8px; font-weight: bold; }
-        .footer { margin-top: 32px; font-size: 12px; color: #6b7280; }
+        .footer { margin-top: 32px; font-size: 12px; color: #4b5563; }
     </style>
 </head>
 <body>
     <div class="title">Hola,</div>
-    <p>Te informamos que tu pago ha sido acreditado por la administración.</p>
+    @if($isPartial)
+        <p>Te informamos que tu <strong>pago parcial</strong> fue acreditado por la administración.</p>
+    @else
+        <p>Te informamos que tu pago ha sido acreditado por la administración.</p>
+    @endif
     <p><strong>Alumno:</strong> {{ $fee->student->last_name }}, {{ $fee->student->first_name }}</p>
     <p><strong>Concepto:</strong> {{ \Carbon\Carbon::createFromFormat('Y-m', $fee->period)->translatedFormat('F Y') }}</p>
-    <p><strong>Monto:</strong> $ {{ number_format($fee->amount, 2, ',', '.') }}</p>
+    <p><strong>Monto acreditado:</strong> $ {{ number_format((float) $appliedAmount, 2, ',', '.') }}</p>
+    @if($isPartial)
+        <p><strong>Saldo pendiente:</strong> $ {{ number_format((float) $remainingAmount, 2, ',', '.') }}</p>
+    @endif
     <p>Tu comprobante quedó guardado y podés descargarlo desde el Portal de Padres.</p>
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 16px 0 12px;">
         <tr>
@@ -31,7 +38,7 @@
             </td>
         </tr>
     </table>
-    <p style="font-size: 12px; color: #6b7280;">
+    <p style="font-size: 12px; color: #4b5563;">
         Si el botón no se visualiza correctamente, ingresá directamente a:
         <a href="https://juvefutbol.institutojuvenilia.edu.ar" style="color:#2563eb; text-decoration:underline;">
             juvefutbol.institutojuvenilia.edu.ar

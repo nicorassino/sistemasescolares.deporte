@@ -26,7 +26,10 @@ class GroupsPage extends Component
     public function render()
     {
         return view('livewire.admin.groups-page', [
-            'groups' => Group::orderBy('name')->get(),
+            'groups' => Group::with('teacher:id,first_name,last_name')
+                ->withCount('students')
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 
@@ -81,7 +84,13 @@ class GroupsPage extends Component
 
     public function delete(int $id)
     {
-        $group = Group::findOrFail($id);
+        $group = Group::withCount('students')->findOrFail($id);
+
+        if ($group->students_count > 0 || $group->teacher_id !== null) {
+            session()->flash('error', 'No se puede eliminar el grupo porque tiene alumnos o un profesor asignado.');
+            return;
+        }
+
         $group->delete();
         if ($this->editing && $this->editing->id === $id) {
             $this->resetForm();

@@ -42,13 +42,23 @@
             <td>{{ $fee->student->last_name }}, {{ $fee->student->first_name }}</td>
         </tr>
         <tr>
+            <th>Grupo</th>
+            <td>{{ $fee->group?->name ?? $fee->student->groups->first()?->name ?? 'Sin grupo asignado' }}</td>
+        </tr>
+        <tr>
             <th>Concepto</th>
             <td>{{ \Illuminate\Support\Str::ucfirst(\Carbon\Carbon::createFromFormat('Y-m', $fee->period)->locale('es')->isoFormat('MMMM YYYY')) }}</td>
         </tr>
         <tr>
-            <th>Monto</th>
-            <td class="amount">$ {{ number_format($fee->amount, 2, ',', '.') }}</td>
+            <th>Monto acreditado</th>
+            <td class="amount">$ {{ number_format((float) $receiptAmount, 2, ',', '.') }}</td>
         </tr>
+        @if(($remainingAmount ?? 0) > 0)
+            <tr>
+                <th>Saldo pendiente</th>
+                <td>$ {{ number_format((float) $remainingAmount, 2, ',', '.') }}</td>
+            </tr>
+        @endif
         <tr>
             <th>Fecha de pago</th>
             <td>{{ $paidAt ? \Carbon\Carbon::parse($paidAt)->format('d/m/Y') : '—' }}</td>

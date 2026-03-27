@@ -34,6 +34,7 @@ class PaymentReminderMail extends Mailable
     {
         return new Content(
             view: 'emails.payment-reminder',
+            text: 'emails.payment-reminder-text',
         );
     }
 }

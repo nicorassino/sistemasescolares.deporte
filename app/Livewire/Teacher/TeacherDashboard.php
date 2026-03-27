@@ -19,6 +19,7 @@ class TeacherDashboard extends Component
     public ?int $selectedGroupId = null;
 
     public string $selectedDate = '';
+    public string $reportMonth = '';
 
     public bool $showCashModal = false;
 
@@ -29,6 +30,7 @@ class TeacherDashboard extends Component
     public function mount(): void
     {
         $this->selectedDate = now()->format('Y-m-d');
+        $this->reportMonth = now()->format('Y-m');
     }
 
     #[Layout('layouts.teacher')]
@@ -200,7 +202,10 @@ class TeacherDashboard extends Component
         $tutor->load('user');
         $tutorEmail = $tutor->user?->email;
         if ($tutorEmail) {
-            Mail::to($tutorEmail)->send(new PaymentApprovedMail($fee));
+            $fee->refresh();
+            $appliedAmount = min($amount, $debt);
+            $remainingAmount = max((float) $fee->amount - (float) $fee->paid_amount, 0);
+            Mail::to($tutorEmail)->send(new PaymentApprovedMail($fee, $appliedAmount, $remainingAmount));
         }
 
         session()->flash('status', 'Cobro registrado correctamente.');

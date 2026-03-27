@@ -80,6 +80,28 @@
         @endif
     </div>
 
+    {{-- ===== REPORTE ASISTENCIA ===== --}}
+    @if($selectedGroupId)
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3 mb-4">
+            <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">Reporte de asistencia</p>
+            <div class="flex flex-wrap items-center gap-2">
+                <input
+                    type="month"
+                    wire:model.live="reportMonth"
+                    class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm"
+                >
+                <a
+                    href="{{ route('profesor.attendance-pdf.by-group-month', ['group' => $selectedGroupId, 'month' => $reportMonth]) }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center px-3 py-1.5 rounded-md border border-gray-300 text-xs text-gray-700 hover:bg-gray-100"
+                >
+                    Descargar PDF asistencia
+                </a>
+            </div>
+        </div>
+    @endif
+
     {{-- ===== LISTA DE ALUMNOS ===== --}}
     @if($students->isNotEmpty())
         <div>

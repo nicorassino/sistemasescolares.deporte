@@ -36,25 +36,22 @@
         <header class="bg-blue-900 bg-juvenilia-blue sticky top-0 z-30 shadow-lg">
             <div class="px-4 py-3 flex items-center justify-between gap-4">
 
-                {{-- Logos --}}
-                <div class="flex items-center gap-3 shrink-0">
-                    <img
-                        src="{{ asset('IMG/logo_juvenilia.jpeg') }}"
-                        alt="Juvenilia"
-                        class="h-10 w-auto object-contain rounded"
-                    >
-                    <div class="w-px h-8 bg-white/20"></div>
-                    <img
-                        src="{{ asset('IMG/logodepte.jpeg') }}"
-                        alt="Deporte"
-                        class="h-10 w-auto object-contain rounded"
-                    >
-                </div>
-
-                {{-- Título centrado --}}
-                <span class="hidden sm:block text-white font-semibold text-sm tracking-wide flex-1 text-center">
-                    Portal del Profesor
-                </span>
+                <a href="{{ route('profesor.dashboard') }}" class="flex items-center gap-2.5 shrink-0">
+                    @if(request()->routeIs('profesor.login'))
+                        <img
+                            src="{{ asset('IMG/logo_juvenilia.png') }}"
+                            alt="Institución Juvenilia"
+                            class="h-12 w-auto object-contain drop-shadow-md"
+                        >
+                    @else
+                        <img
+                            src="{{ asset('IMG/logodepte.png') }}"
+                            alt="Juvenilia Fútbol"
+                            class="h-12 w-auto object-contain drop-shadow-md"
+                        >
+                    @endif
+                    <span class="hidden sm:block text-white font-black text-sm tracking-wide">Portal del Profesor</span>
+                </a>
 
                 {{-- Logout --}}
                 @auth
@@ -84,6 +81,15 @@
         <main class="flex-1">
             {{ $slot }}
         </main>
+
+        @unless(request()->routeIs('profesor.login'))
+            <footer class="border-t border-gray-200/70 bg-white/70 backdrop-blur-sm">
+                <div class="px-4 py-3 flex items-center justify-center gap-2.5">
+                    <img src="{{ asset('IMG/logo_juvenilia.png') }}" alt="Institución Juvenilia" class="h-8 w-auto object-contain opacity-80">
+                    <span class="text-sm text-gray-500">Institución Juvenilia</span>
+                </div>
+            </footer>
+        @endunless
 
     </div>
 

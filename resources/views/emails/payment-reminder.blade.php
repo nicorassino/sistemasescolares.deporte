@@ -10,7 +10,7 @@
         p { margin: 0 0 12px; }
         .debt { font-size: 16px; font-weight: bold; margin: 16px 0; }
         .button { display: inline-block; margin-top: 16px; padding: 12px 24px; background: #2563eb; color: #fff !important; text-decoration: none; border-radius: 8px; font-weight: bold; }
-        .footer { margin-top: 32px; font-size: 12px; color: #6b7280; }
+        .footer { margin-top: 32px; font-size: 12px; color: #4b5563; }
     </style>
 </head>
 <body>
@@ -37,7 +37,7 @@
             </td>
         </tr>
     </table>
-    <p style="font-size: 12px; color: #6b7280;">
+    <p style="font-size: 12px; color: #4b5563;">
         Si el botón no se visualiza correctamente, ingresá directamente a:
         <a href="https://juvefutbol.institutojuvenilia.edu.ar" style="color:#2563eb; text-decoration:underline;">
             juvefutbol.institutojuvenilia.edu.ar

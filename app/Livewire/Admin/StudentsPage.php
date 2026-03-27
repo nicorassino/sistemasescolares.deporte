@@ -46,6 +46,13 @@ class StudentsPage extends Component
 
     /** Grupo seleccionado para el PDF (null = todos). */
     public ?int $pdf_group_id = null;
+    public ?int $pdf_attendance_group_id = null;
+    public string $pdf_attendance_month = '';
+
+    public function mount(): void
+    {
+        $this->pdf_attendance_month = now()->format('Y-m');
+    }
 
     #[Layout('layouts.app')]
     public function render()
@@ -66,7 +73,7 @@ class StudentsPage extends Component
 
         return view('livewire.admin.students-page', [
             'students' => $studentsQuery->get(),
-            'groups' => Group::orderBy('name')->get(),
+            'groups' => Group::where('is_active', true)->orderBy('name')->get(),
             'tutorResults' => $this->tutorResults(),
             'selectedTutors' => count($this->selected_tutor_ids)
                 ? Tutor::with('user:id,email')->whereIn('id', $this->selected_tutor_ids)->get()
@@ -113,7 +120,11 @@ class StudentsPage extends Component
             'gender' => ['nullable', 'in:male,female,other'],
             'is_active' => ['boolean'],
             'scholarship_percentage' => ['required', 'integer', 'min:0', 'max:100'],
-            'group_id' => ['required', 'integer', 'exists:groups,id'],
+            'group_id' => [
+                'required',
+                'integer',
+                Rule::exists('groups', 'id')->where(fn ($query) => $query->where('is_active', true)),
+            ],
         ]);
 
         DB::transaction(function () {
@@ -225,6 +236,9 @@ class StudentsPage extends Component
         }
 
         $userId = $this->editingTutor->user_id;
+        $emailRule = $userId
+            ? Rule::unique('users', 'email')->ignore($userId)
+            : Rule::unique('users', 'email');
 
         $this->validate([
             'editing_tutor_first_name' => ['required', 'string', 'max:100'],
@@ -233,7 +247,7 @@ class StudentsPage extends Component
                 'required',
                 'email',
                 'max:190',
-                Rule::unique('users', 'email')->ignore($userId),
+                $emailRule,
             ],
             'editing_tutor_phone' => ['required', 'string', 'max:30'],
             'editing_tutor_dni' => ['nullable', 'string', 'max:20'],
@@ -246,6 +260,16 @@ class StudentsPage extends Component
                     'name' => trim($this->editing_tutor_first_name . ' ' . $this->editing_tutor_last_name),
                     'email' => $this->editing_tutor_email,
                 ]);
+            } else {
+                $user = User::create([
+                    'name' => trim($this->editing_tutor_first_name . ' ' . $this->editing_tutor_last_name),
+                    'email' => $this->editing_tutor_email,
+                    'password' => Hash::make('juvefutbol'),
+                    'must_change_password' => true,
+                    'role' => 'tutor',
+                    'is_active' => true,
+                ]);
+                $this->editingTutor->update(['user_id' => $user->id]);
             }
 
             $this->editingTutor->update([

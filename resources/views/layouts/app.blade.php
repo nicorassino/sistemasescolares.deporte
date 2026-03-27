@@ -13,14 +13,15 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between py-3 gap-4">
                     <div class="flex items-center gap-3 min-w-0">
-                        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 shrink-0">
-                            <img src="{{ asset('IMG/logo_juvenilia.jpeg') }}" alt="Juvenilia" class="h-8 sm:h-10 w-auto object-contain rounded">
-                            <img src="{{ asset('IMG/logodepte.jpeg') }}" alt="Deporte" class="h-8 sm:h-10 w-auto object-contain rounded">
+                        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 shrink-0">
+                            {{-- Principal: escuela de fútbol --}}
+                            <img
+                                src="{{ asset('IMG/logodepte.png') }}"
+                                alt="Juvenilia Fútbol"
+                                class="h-10 sm:h-12 w-auto object-contain drop-shadow-md"
+                            >
+                            <span class="text-white font-black text-sm tracking-wide">Administración</span>
                         </a>
-                        <div class="min-w-0">
-                            <h1 class="text-base sm:text-lg font-semibold text-white truncate">Panel administrativo</h1>
-                            <p class="text-xs text-white/70 hidden sm:block">Juvenilia</p>
-                        </div>
                     </div>
 
                     <nav class="hidden lg:flex flex-wrap items-center gap-1 text-sm">
@@ -128,6 +129,13 @@
         <main class="flex-1">
             {{ $slot }}
         </main>
+
+        <footer class="border-t border-gray-200/70 bg-white/70 backdrop-blur-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-2.5">
+                <img src="{{ asset('IMG/logo_juvenilia.png') }}" alt="Institución Juvenilia" class="h-12 w-auto object-contain opacity-80">
+                <span class="text-sm text-gray-500">Institución Juvenilia</span>
+            </div>
+        </footer>
     </div>
 
     @livewireScripts

@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\DebtPdfController;
+use App\Http\Controllers\AttendanceReportController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\StudentPdfController;
+use App\Models\Announcement;
 use App\Models\Fee;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Auth;
@@ -71,6 +73,26 @@ Route::get('/recibo/{fee}/descargar', [ReceiptController::class, 'download'])
     ->middleware(['signed'])
     ->name('receipt.download.signed');
 
+Route::get('/novedades/imagen/{announcement}', function (Announcement $announcement) {
+    $disk = Storage::disk('public');
+
+    if (! $announcement->image_path || ! $disk->exists($announcement->image_path)) {
+        abort(404);
+    }
+
+    $extension = strtolower(pathinfo($announcement->image_path, PATHINFO_EXTENSION));
+    $mimeType = match ($extension) {
+        'png' => 'image/png',
+        'jpg', 'jpeg' => 'image/jpeg',
+        default => 'application/octet-stream',
+    };
+
+    return response($disk->get($announcement->image_path), 200, [
+        'Content-Type' => $mimeType,
+        'Cache-Control' => 'public, max-age=86400',
+    ]);
+})->middleware('auth')->name('announcements.image');
+
 Route::get('/admin/login', AdminLogin::class)->name('admin.login')->middleware('guest');
 
 Route::post('/admin/logout', function () {
@@ -86,6 +108,7 @@ Route::prefix('admin')->middleware(EnsureAdmin::class)->group(function () {
     Route::get('/grupos', GroupsPage::class)->name('admin.groups');
     Route::get('/alumnos', StudentsPage::class)->name('admin.students');
     Route::get('/alumnos/pdf/listado', [StudentPdfController::class, 'groups'])->name('admin.students-pdf.by-group');
+    Route::get('/alumnos/pdf/asistencia', [AttendanceReportController::class, 'adminGroupMonth'])->name('admin.attendance-pdf.by-group-month');
     Route::get('/novedades', AnnouncementManager::class)->name('admin.announcements');
     Route::get('/profesores', TeachersPage::class)->name('admin.teachers');
     Route::get('/cuotas/generar', GeneradorCuotasMasivo::class)->name('admin.fees.generate');
@@ -130,6 +153,7 @@ Route::prefix('profesor')->group(function () {
         return redirect()->route('profesor.login');
     })->name('profesor.logout');
     Route::get('/', TeacherDashboard::class)->name('profesor.dashboard')->middleware(EnsureTeacherPortal::class);
+    Route::get('/asistencia/pdf', [AttendanceReportController::class, 'teacherGroupMonth'])->name('profesor.attendance-pdf.by-group-month')->middleware(EnsureTeacherPortal::class);
 });
 
 // Cualquier ruta no definida => login de tutor

@@ -47,7 +47,7 @@
         <div class="bg-white rounded-xl shadow border border-gray-100 overflow-hidden">
             <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                 <h2 class="text-base font-semibold text-gray-900">Novedades que ven los padres</h2>
-                <a href="{{ route('admin.announcements') }}" class="text-sm text-blue-600 hover:underline">Gestionar</a>
+                <a href="{{ route('admin.announcements') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition cursor-pointer">Gestionar</a>
             </div>
             <div class="divide-y divide-gray-50 max-h-64 overflow-y-auto">
                 @forelse($recentAnnouncements as $announcement)

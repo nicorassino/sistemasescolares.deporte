@@ -30,7 +30,11 @@ class FeeManager extends Component
     public function render()
     {
         $query = Fee::query()
-            ->with(['student.tutors.user', 'group'])
+            ->with([
+                'student.tutors.user',
+                'group',
+                'payments' => fn ($q) => $q->where('status', 'approved')->orderBy('paid_on_date'),
+            ])
             ->orderBy('period')
             ->orderBy('due_date');
 

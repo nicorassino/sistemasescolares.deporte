@@ -45,6 +45,7 @@
         <thead>
             <tr>
                 <th>Período</th>
+                <th>Grupo</th>
                 <th class="text-right">Monto</th>
                 <th class="text-right">Pagado</th>
                 <th>Estado</th>
@@ -55,6 +56,7 @@
             @forelse($rows as $row)
                 <tr>
                     <td>{{ $row->period_label }}</td>
+                    <td>{{ $row->group_name ?? 'Sin grupo' }}</td>
                     <td class="text-right">$ {{ number_format($row->amount, 2, ',', '.') }}</td>
                     <td class="text-right">$ {{ number_format($row->paid_amount, 2, ',', '.') }}</td>
                     <td>
@@ -65,19 +67,24 @@
                         @else
                             Pendiente
                         @endif
+                        @if($row->payments_detail)
+                            <div style="margin-top:4px; font-size:10px; color:#6b7280;">
+                                Pagos: {{ $row->payments_detail }}
+                            </div>
+                        @endif
                     </td>
                     <td class="text-right">$ {{ number_format($row->owed, 2, ',', '.') }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" style="text-align: center;">No hay cuotas registradas.</td>
+                    <td colspan="6" style="text-align: center;">No hay cuotas registradas.</td>
                 </tr>
             @endforelse
         </tbody>
         @if(count($rows) > 0)
             <tfoot>
                 <tr class="total-row">
-                    <td colspan="4" class="text-right">Total adeudado</td>
+                    <td colspan="5" class="text-right">Total adeudado</td>
                     <td class="text-right">$ {{ number_format($totalDebt, 2, ',', '.') }}</td>
                 </tr>
             </tfoot>

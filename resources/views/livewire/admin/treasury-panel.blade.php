@@ -56,7 +56,7 @@
         <button
             type="button"
             wire:click="clearFilters"
-            class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 transition cursor-pointer"
         >
             Limpiar filtros
         </button>
@@ -67,14 +67,14 @@
             <button
                 type="button"
                 wire:click="setTab('pending')"
-                class="px-4 py-2.5 text-sm font-medium rounded-t-lg transition {{ $activeTab === 'pending' ? 'bg-white border border-b-0 border-gray-200 text-blue-600 -mb-px' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}"
+                class="px-4 py-2.5 text-sm font-medium rounded-t-lg transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300 {{ $activeTab === 'pending' ? 'bg-white border border-b-0 border-gray-200 text-blue-600 -mb-px' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}"
             >
                 En revisión ({{ $payments->count() }})
             </button>
             <button
                 type="button"
                 wire:click="setTab('history')"
-                class="px-4 py-2.5 text-sm font-medium rounded-t-lg transition {{ $activeTab === 'history' ? 'bg-white border border-b-0 border-gray-200 text-blue-600 -mb-px' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}"
+                class="px-4 py-2.5 text-sm font-medium rounded-t-lg transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300 {{ $activeTab === 'history' ? 'bg-white border border-b-0 border-gray-200 text-blue-600 -mb-px' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}"
             >
                 Historial
             </button>
@@ -90,7 +90,9 @@
                         <th class="px-4 py-3 text-left font-semibold text-gray-700">Alumno</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-700">Tutor</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-700">Titular de la transferencia</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">Deuda actual</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-700">Monto</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">Diferencia</th>
                         <th class="px-4 py-3 text-left font-semibold text-gray-700">Comprobante</th>
                         <th class="px-4 py-3 text-right font-semibold text-gray-700">Acciones</th>
                     </tr>
@@ -100,6 +102,8 @@
                         @php
                             $student = $payment->fee->student ?? null;
                             $tutor = $payment->tutor;
+                            $currentDebt = max((float) $payment->fee->amount - (float) $payment->fee->paid_amount, 0);
+                            $difference = (float) $payment->amount_reported - $currentDebt;
                         @endphp
                         <tr class="hover:bg-gray-50/50">
                             <td class="px-4 py-3 text-gray-900">
@@ -116,7 +120,25 @@
                                 {{ $payment->transfer_sender_name ?? '—' }}
                             </td>
                             <td class="px-4 py-3 text-gray-900 font-medium">
+                                $ {{ number_format($currentDebt, 2, ',', '.') }}
+                            </td>
+                            <td class="px-4 py-3 text-gray-900 font-medium">
                                 $ {{ number_format($payment->amount_reported, 2, ',', '.') }}
+                            </td>
+                            <td class="px-4 py-3">
+                                @if($difference > 0.00001)
+                                    <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
+                                        + $ {{ number_format($difference, 2, ',', '.') }}
+                                    </span>
+                                @elseif($difference < -0.00001)
+                                    <span class="px-2 py-1 text-xs rounded bg-amber-100 text-amber-700">
+                                        - $ {{ number_format(abs($difference), 2, ',', '.') }}
+                                    </span>
+                                @else
+                                    <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">
+                                        Exacto
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-4 py-3">
                                 @if($payment->evidence_file_path)
@@ -136,7 +158,8 @@
                                 <button
                                     type="button"
                                     wire:click="approvePayment({{ $payment->id }})"
-                                    class="inline-flex items-center px-3 py-1.5 rounded-md bg-green-600 text-white font-medium hover:bg-green-700"
+                                    onclick="if(!confirm('Vas a aprobar $ {{ number_format((float) $payment->amount_reported, 2, ',', '.') }} para una deuda actual de $ {{ number_format($currentDebt, 2, ',', '.') }}. ¿Confirmás?')) { event.stopImmediatePropagation(); return false; }"
+                                    class="inline-flex items-center px-3 py-1.5 rounded-md bg-green-600 text-white font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition cursor-pointer"
                                 >
                                     Aprobar
                                 </button>
@@ -144,7 +167,7 @@
                                     type="button"
                                     wire:click="rejectPayment({{ $payment->id }})"
                                     wire:confirm="¿Rechazar este pago y eliminar el comprobante?"
-                                    class="inline-flex items-center px-3 py-1.5 rounded-md bg-red-600 text-white font-medium hover:bg-red-700"
+                                    class="inline-flex items-center px-3 py-1.5 rounded-md bg-red-600 text-white font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 transition cursor-pointer"
                                 >
                                     Rechazar
                                 </button>
@@ -152,7 +175,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+                            <td colspan="8" class="px-4 py-8 text-center text-gray-500">
                                 No hay pagos en revisión.
                             </td>
                         </tr>
@@ -239,7 +262,7 @@
                             <td class="px-4 py-3 text-right">
                                 <button
                                     type="button"
-                                    class="inline-flex items-center px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+                                    class="inline-flex items-center px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 transition cursor-pointer"
                                     onclick="if (confirm('¿Volver este pago al estado de revisión? Se ajustará el estado de la cuota si corresponde.')) { @this.call('resetToPending', {{ $payment->id }}) }"
                                 >
                                     Volver a revisión

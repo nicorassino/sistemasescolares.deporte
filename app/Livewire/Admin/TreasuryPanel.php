@@ -6,10 +6,11 @@ use App\Mail\PaymentApprovedMail;
 use App\Models\Group;
 use App\Models\Payment;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -97,35 +98,74 @@ class TreasuryPanel extends Component
 
     public function approvePayment(int $paymentId): void
     {
-        $payment = Payment::where('status', 'pending_review')
-            ->with(['fee.student', 'tutor.user'])
-            ->findOrFail($paymentId);
+        $payment = Payment::with(['fee.student', 'tutor.user'])->findOrFail($paymentId);
 
-        $fee = $payment->fee;
-
-        if (! $fee->receipt_number) {
-            $fee->receipt_number = $this->generateReceiptNumber($fee->id);
+        if ($payment->status !== 'pending_review') {
+            session()->flash('warning', 'Este pago ya no está en revisión.');
+            return;
         }
 
-        $payment->update([
-            'status' => 'approved',
-            'reviewed_by' => Auth::id(),
-            'reviewed_at' => now(),
-        ]);
+        $summary = DB::transaction(function () use ($payment) {
+            $lockedPayment = Payment::query()
+                ->whereKey($payment->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $fee->status = 'paid';
-        $fee->paid_at = Carbon::now();
-        $fee->save();
+            if ($lockedPayment->status !== 'pending_review') {
+                return null;
+            }
+
+            $fee = $lockedPayment->fee()->lockForUpdate()->firstOrFail();
+
+            $approvedPayments = Payment::query()
+                ->where('fee_id', $fee->id)
+                ->where('status', 'approved')
+                ->orderBy('id')
+                ->get();
+
+            $oldAllocation = $this->allocateFeePayments($approvedPayments, (float) $fee->amount);
+            $newApproved = $approvedPayments->push($lockedPayment);
+            $newAllocation = $this->allocateFeePayments($newApproved, (float) $fee->amount);
+
+            if (! $fee->receipt_number) {
+                $fee->receipt_number = $this->generateReceiptNumber($fee->id);
+            }
+
+            $lockedPayment->update([
+                'status' => 'approved',
+                'reviewed_by' => Auth::id(),
+                'reviewed_at' => now(),
+            ]);
+
+            $this->applyFeeFromAllocation($fee, $newAllocation);
+            $this->applyWalletCreditDelta($oldAllocation['credits_by_tutor'], $newAllocation['credits_by_tutor']);
+
+            return [
+                'applied' => $newAllocation['by_payment'][$lockedPayment->id]['applied'] ?? 0.0,
+                'credit' => $newAllocation['by_payment'][$lockedPayment->id]['credit'] ?? 0.0,
+                'fee_status' => $fee->status,
+                'remaining' => $newAllocation['remaining'] ?? 0.0,
+            ];
+        });
+
+        if ($summary === null) {
+            session()->flash('warning', 'Este pago ya fue revisado por otro administrador.');
+            return;
+        }
 
         $tutorEmail = $payment->tutor->user?->email;
         if (! $tutorEmail) {
-            session()->flash('warning', 'Pago aprobado, pero no se envió correo: el tutor no tiene email configurado.');
+            session()->flash('warning', $this->approvalMessage($summary).' No se envió correo: el tutor no tiene email configurado.');
             return;
         }
 
         try {
-            Mail::to($tutorEmail)->send(new PaymentApprovedMail($payment->fee));
-            session()->flash('status', 'Pago aprobado y correo enviado correctamente.');
+            Mail::to($tutorEmail)->send(new PaymentApprovedMail(
+                $payment->fee,
+                (float) ($summary['applied'] ?? 0),
+                (float) ($summary['remaining'] ?? 0)
+            ));
+            session()->flash('status', $this->approvalMessage($summary).' Correo enviado correctamente.');
         } catch (\Throwable $e) {
             Log::error('Error enviando PaymentApprovedMail desde tesorería', [
                 'payment_id' => $payment->id,
@@ -133,7 +173,7 @@ class TreasuryPanel extends Component
                 'exception' => $e->getMessage(),
             ]);
 
-            session()->flash('warning', 'Pago aprobado, pero no se pudo enviar el correo. Revisá la configuración SMTP y logs.');
+            session()->flash('warning', $this->approvalMessage($summary).' No se pudo enviar el correo. Revisá SMTP y logs.');
         }
     }
 
@@ -152,53 +192,158 @@ class TreasuryPanel extends Component
 
     public function rejectPayment(int $paymentId): void
     {
-        $payment = Payment::where('status', 'pending_review')
-            ->with('fee')
-            ->findOrFail($paymentId);
+        $payment = Payment::findOrFail($paymentId);
 
-        if ($payment->evidence_file_path && Storage::exists($payment->evidence_file_path)) {
-            Storage::delete($payment->evidence_file_path);
+        if ($payment->status !== 'pending_review') {
+            session()->flash('warning', 'Este pago ya no está en revisión.');
+            return;
         }
 
         $payment->update([
             'status' => 'rejected',
-            'evidence_file_path' => null,
-            'evidence_file_size' => null,
-            'evidence_mime_type' => null,
-            'transfer_sender_name' => null,
             'reviewed_by' => Auth::id(),
             'reviewed_at' => now(),
         ]);
 
-        $payment->fee->update([
-            'status' => 'pending',
-            'paid_at' => null,
-        ]);
-
-        session()->flash('status', 'Pago rechazado y comprobante eliminado.');
+        session()->flash('status', 'Pago rechazado. La cuota mantiene su estado actual.');
     }
 
     public function resetToPending(int $paymentId): void
     {
-        $payment = Payment::whereIn('status', ['approved', 'rejected'])
-            ->with('fee')
-            ->findOrFail($paymentId);
+        $payment = Payment::with('fee')->findOrFail($paymentId);
 
-        $wasApproved = $payment->status === 'approved';
-
-        $payment->update([
-            'status' => 'pending_review',
-            'reviewed_by' => null,
-            'reviewed_at' => null,
-        ]);
-
-        if ($wasApproved) {
-            $payment->fee->update([
-                'status' => 'pending',
-                'paid_at' => null,
-            ]);
+        if (! in_array($payment->status, ['approved', 'rejected'], true)) {
+            session()->flash('warning', 'Solo se puede volver a revisión pagos aprobados o rechazados.');
+            return;
         }
 
+        DB::transaction(function () use ($payment) {
+            $lockedPayment = Payment::query()
+                ->whereKey($payment->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $fee = $lockedPayment->fee()->lockForUpdate()->firstOrFail();
+
+            $approvedBefore = Payment::query()
+                ->where('fee_id', $fee->id)
+                ->where('status', 'approved')
+                ->orderBy('id')
+                ->get();
+
+            $oldAllocation = $this->allocateFeePayments($approvedBefore, (float) $fee->amount);
+
+            $lockedPayment->update([
+                'status' => 'pending_review',
+                'reviewed_by' => null,
+                'reviewed_at' => null,
+            ]);
+
+            $approvedAfter = Payment::query()
+                ->where('fee_id', $fee->id)
+                ->where('status', 'approved')
+                ->orderBy('id')
+                ->get();
+
+            $newAllocation = $this->allocateFeePayments($approvedAfter, (float) $fee->amount);
+
+            $this->applyFeeFromAllocation($fee, $newAllocation);
+            $this->applyWalletCreditDelta($oldAllocation['credits_by_tutor'], $newAllocation['credits_by_tutor']);
+        });
+
         session()->flash('status', 'El pago volvió al estado de revisión.');
+    }
+
+    private function allocateFeePayments(Collection $payments, float $feeAmount): array
+    {
+        $remaining = max($feeAmount, 0);
+        $appliedTotal = 0.0;
+        $creditsByTutor = [];
+        $byPayment = [];
+
+        foreach ($payments as $payment) {
+            $amount = (float) $payment->amount_reported;
+            $applied = min($amount, $remaining);
+            $credit = max($amount - $applied, 0);
+
+            $remaining -= $applied;
+            $appliedTotal += $applied;
+
+            if ($credit > 0 && $payment->tutor_id) {
+                $creditsByTutor[$payment->tutor_id] = ($creditsByTutor[$payment->tutor_id] ?? 0) + $credit;
+            }
+
+            $byPayment[$payment->id] = [
+                'applied' => $applied,
+                'credit' => $credit,
+            ];
+        }
+
+        return [
+            'applied_total' => $appliedTotal,
+            'remaining' => max($remaining, 0),
+            'credits_by_tutor' => $creditsByTutor,
+            'by_payment' => $byPayment,
+        ];
+    }
+
+    private function applyFeeFromAllocation($fee, array $allocation): void
+    {
+        $applied = min((float) $allocation['applied_total'], (float) $fee->amount);
+        $remaining = max((float) $fee->amount - $applied, 0);
+
+        $fee->paid_amount = $applied;
+        if ($remaining <= 0.00001) {
+            $fee->status = 'paid';
+            $fee->paid_at = Carbon::now();
+        } elseif ($applied > 0) {
+            $fee->status = 'partial';
+            $fee->paid_at = null;
+        } else {
+            $fee->status = 'pending';
+            $fee->paid_at = null;
+        }
+
+        $fee->save();
+    }
+
+    private function applyWalletCreditDelta(array $oldCredits, array $newCredits): void
+    {
+        $tutorIds = array_unique(array_merge(array_keys($oldCredits), array_keys($newCredits)));
+
+        foreach ($tutorIds as $tutorId) {
+            $old = (float) ($oldCredits[$tutorId] ?? 0);
+            $new = (float) ($newCredits[$tutorId] ?? 0);
+            $delta = $new - $old;
+
+            if (abs($delta) < 0.00001) {
+                continue;
+            }
+
+            $tutor = \App\Models\Tutor::query()->lockForUpdate()->find($tutorId);
+            if (! $tutor) {
+                continue;
+            }
+
+            $newBalance = (float) $tutor->wallet_balance + $delta;
+            $tutor->wallet_balance = max($newBalance, 0);
+            $tutor->save();
+        }
+    }
+
+    private function approvalMessage(array $summary): string
+    {
+        $applied = number_format((float) $summary['applied'], 2, ',', '.');
+        $credit = number_format((float) $summary['credit'], 2, ',', '.');
+
+        if ((float) $summary['credit'] > 0) {
+            return "Pago aprobado: se aplicaron $ {$applied} a la cuota y se acreditaron $ {$credit} en billetera.";
+        }
+
+        if ($summary['fee_status'] === 'partial') {
+            return "Pago aprobado parcialmente: se aplicaron $ {$applied}.";
+        }
+
+        return "Pago aprobado: se aplicaron $ {$applied} y la cuota quedó saldada.";
     }
 }

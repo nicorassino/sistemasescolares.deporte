@@ -33,14 +33,14 @@
             <div class="flex gap-2">
                 <button
                     type="submit"
-                    class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg"
+                    class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition cursor-pointer"
                     @if(empty($teachers)) disabled @endif
                 >
                     Entrar
                 </button>
                 <a
                     href="{{ route('admin.dashboard') }}"
-                    class="px-3 py-2 text-sm border border-gray-300 rounded-lg inline-flex items-center"
+                    class="px-3 py-2 text-sm border border-gray-300 rounded-lg inline-flex items-center text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 transition cursor-pointer"
                 >
                     Cancelar
                 </a>

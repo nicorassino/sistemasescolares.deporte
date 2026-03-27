@@ -51,7 +51,7 @@ class TeachersPage extends Component
 
         return view('livewire.admin.teachers-page', [
             'teachers' => $teachersQuery->get(),
-            'groups' => Group::orderBy('name')->get(),
+            'groups' => Group::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
@@ -95,7 +95,10 @@ class TeachersPage extends Component
             'is_active' => ['boolean'],
             'notes' => ['nullable', 'string'],
             'selected_group_ids' => ['array'],
-            'selected_group_ids.*' => ['integer', 'exists:groups,id'],
+            'selected_group_ids.*' => [
+                'integer',
+                Rule::exists('groups', 'id')->where(fn ($query) => $query->where('is_active', true)),
+            ],
             'login_email' => $loginEmailRules,
             'login_password' => [
                 'nullable',
@@ -131,7 +134,9 @@ class TeachersPage extends Component
         // Grupos a cargo
         Group::where('teacher_id', $teacher->id)->update(['teacher_id' => null]);
         if (! empty($this->selected_group_ids)) {
-            Group::whereIn('id', $this->selected_group_ids)->update(['teacher_id' => $teacher->id]);
+            Group::whereIn('id', $this->selected_group_ids)
+                ->where('is_active', true)
+                ->update(['teacher_id' => $teacher->id]);
         }
 
         // Acceso al panel: crear o actualizar User

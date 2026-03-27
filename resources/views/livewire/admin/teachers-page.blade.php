@@ -186,13 +186,13 @@
                                 <button
                                     type="button"
                                     wire:click="edit({{ $teacher->id }})"
-                                    class="text-blue-600 text-xs"
+                                    class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition cursor-pointer"
                                 >
                                     Editar
                                 </button>
                                 <button
                                     type="button"
-                                    class="text-red-600 text-xs"
+                                    class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400 transition cursor-pointer"
                                     onclick="if (confirm('¿Eliminar este profesor? Esta acción no se puede deshacer.')) { @this.call('delete', {{ $teacher->id }}) }"
                                 >
                                     Eliminar

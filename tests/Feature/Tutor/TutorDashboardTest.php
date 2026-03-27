@@ -204,6 +204,7 @@ class TutorDashboardTest extends TestCase
             ->test(TutorDashboard::class)
             ->call('openPaymentModal', $setup['fee']->id)
             ->set('transfer_sender_name', 'Nombre Titular')
+            ->set('transfer_amount', '5000')
             ->set('paymentProof', $file)
             ->call('submitPaymentProof')
             ->assertHasNoErrors();
@@ -226,6 +227,7 @@ class TutorDashboardTest extends TestCase
             ->test(TutorDashboard::class)
             ->call('openPaymentModal', $setup['fee']->id)
             ->set('transfer_sender_name', 'Titular PDF')
+            ->set('transfer_amount', '2500')
             ->set('paymentProof', $file)
             ->call('submitPaymentProof')
             ->assertHasNoErrors();
@@ -239,7 +241,7 @@ class TutorDashboardTest extends TestCase
     }
 
     /** @test */
-    public function si_ya_existe_pago_para_la_cuota_se_actualiza_y_no_duplica(): void
+    public function si_ya_existe_pago_para_la_cuota_crea_un_nuevo_registro(): void
     {
         Storage::fake('local');
         $setup = $this->createTutorWithStudentAndFee('pending');
@@ -266,11 +268,12 @@ class TutorDashboardTest extends TestCase
             ->test(TutorDashboard::class)
             ->call('openPaymentModal', $setup['fee']->id)
             ->set('transfer_sender_name', 'Titular Nuevo')
+            ->set('transfer_amount', '3000')
             ->set('paymentProof', $newFile)
             ->call('submitPaymentProof')
             ->assertHasNoErrors();
 
-        $this->assertDatabaseCount('payments', 1);
+        $this->assertDatabaseCount('payments', 2);
         $this->assertDatabaseHas('payments', [
             'fee_id' => $setup['fee']->id,
             'tutor_id' => $setup['tutor']->id,
@@ -304,9 +307,27 @@ class TutorDashboardTest extends TestCase
             ->test(TutorDashboard::class)
             ->call('openPaymentModal', $setup['fee']->id)
             ->set('transfer_sender_name', '')
+            ->set('transfer_amount', '5000')
             ->set('paymentProof', $file)
             ->call('submitPaymentProof')
             ->assertHasErrors(['transfer_sender_name']);
+    }
+
+    /** @test */
+    public function falla_al_informar_pago_sin_monto_transferido(): void
+    {
+        Storage::fake('local');
+        $setup = $this->createTutorWithStudentAndFee('pending');
+        $file = UploadedFile::fake()->image('comprobante3.jpg');
+
+        Livewire::actingAs($setup['tutorUser'])
+            ->test(TutorDashboard::class)
+            ->call('openPaymentModal', $setup['fee']->id)
+            ->set('transfer_sender_name', 'Titular')
+            ->set('transfer_amount', '')
+            ->set('paymentProof', $file)
+            ->call('submitPaymentProof')
+            ->assertHasErrors(['transfer_amount']);
     }
 
     // -------------------------------------------------------------------------

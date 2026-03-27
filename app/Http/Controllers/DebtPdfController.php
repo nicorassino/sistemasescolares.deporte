@@ -16,6 +16,7 @@ class DebtPdfController extends Controller
     {
         $fees = $student->fees()
             ->with('group')
+            ->with(['payments' => fn ($q) => $q->where('status', 'approved')->orderBy('paid_on_date')])
             ->orderByDesc('period')
             ->get();
 
@@ -27,10 +28,14 @@ class DebtPdfController extends Controller
             $rows[] = (object) [
                 'period' => $fee->period,
                 'period_label' => \Carbon\Carbon::createFromFormat('Y-m', $fee->period)->translatedFormat('F Y'),
+                'group_name' => $fee->group?->name,
                 'amount' => $fee->amount,
                 'paid_amount' => $fee->paid_amount ?? 0,
                 'status' => $fee->status,
                 'owed' => $owed,
+                'payments_detail' => $fee->payments
+                    ->map(fn ($p) => $p->paid_on_date?->format('d/m/Y').' - $ '.number_format((float) $p->amount_reported, 2, ',', '.'))
+                    ->implode(' | '),
             ];
         }
 

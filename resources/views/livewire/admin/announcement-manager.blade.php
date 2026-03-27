@@ -5,7 +5,7 @@
             <p class="text-sm text-gray-600">Creá y administrá los comunicados que verán las familias.</p>
         </div>
         @if($editing)
-            <button type="button" wire:click="create" class="text-sm text-blue-700 hover:underline">
+            <button type="button" wire:click="create" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition cursor-pointer">
                 Nueva novedad
             </button>
         @endif
@@ -44,7 +44,9 @@
                         type="file"
                         wire:model="image"
                         accept="image/jpeg,image/jpg,image/png"
-                        class="w-full text-sm"
+                        class="w-full text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md p-1.5
+                               file:mr-3 file:rounded-md file:border file:border-gray-400 file:bg-gray-300 file:px-3 file:py-1.5
+                               file:text-sm file:font-medium file:text-gray-800 hover:file:bg-gray-400 file:cursor-pointer cursor-pointer"
                     >
                     <p class="text-[11px] text-gray-500 mt-1">
                         Formatos permitidos: JPG o PNG. Tamaño máximo: 15MB.
@@ -96,13 +98,13 @@
                                     <button
                                         type="button"
                                         wire:click="edit({{ $announcement->id }})"
-                                        class="text-blue-600 hover:underline"
+                                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition cursor-pointer"
                                     >
                                         Editar
                                     </button>
                                     <button
                                         type="button"
-                                        class="text-red-600 hover:underline"
+                                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400 transition cursor-pointer"
                                         onclick="if (confirm('¿Eliminar esta novedad? Esta acción no se puede deshacer.')) { @this.call('delete', {{ $announcement->id }}) }"
                                     >
                                         Eliminar
@@ -112,7 +114,7 @@
                             @if($announcement->image_path)
                                 <div class="mt-1">
                                     <img
-                                        src="{{ asset('storage/'.$announcement->image_path) }}"
+                                        src="{{ route('announcements.image', $announcement) }}"
                                         alt="Imagen de la novedad"
                                         class="w-full max-h-48 object-cover rounded-lg"
                                     >

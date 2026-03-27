@@ -1,5 +1,14 @@
-<div class="px-4 py-2">
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+<div class="px-4 py-8 max-w-sm mx-auto">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="flex flex-col items-center gap-2 py-8 px-6 bg-gradient-to-b from-blue-900 to-blue-700">
+            <img
+                src="{{ asset('IMG/logodepte.png') }}"
+                alt="Juvenilia Fútbol"
+                class="h-28 w-auto object-contain drop-shadow-xl"
+            >
+        </div>
+
+        <div class="p-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-1">Ingresar</h2>
         <p class="text-sm text-gray-500 mb-6">Acceso seguro al panel de administración.</p>
 
@@ -36,11 +45,12 @@
 
             <button
                 type="submit"
-                class="w-full inline-flex items-center justify-center px-4 py-3 rounded-lg bg-blue-600 text-white text-base font-medium hover:bg-blue-700"
+                class="w-full inline-flex items-center justify-center px-4 py-3 rounded-xl bg-blue-700 bg-juvenilia-blue text-white text-base font-semibold hover:brightness-110 active:scale-95 transition-all duration-150"
             >
                 Entrar
             </button>
         </form>
+        </div>
     </div>
 </div>
 

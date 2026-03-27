@@ -12,7 +12,12 @@ class ReceiptController extends Controller
 {
     public function download(Request $request, Fee $fee)
     {
-        $fee->load(['student.tutors.user', 'payments' => fn ($q) => $q->where('status', 'approved')->orderByDesc('paid_on_date')]);
+        $fee->load([
+            'student.tutors.user',
+            'student.groups',
+            'group',
+            'payments' => fn ($q) => $q->where('status', 'approved')->orderByDesc('paid_on_date'),
+        ]);
 
         if (! $request->hasValidSignature()) {
             $user = Auth::user();
@@ -26,6 +31,10 @@ class ReceiptController extends Controller
 
         $latestPayment = $fee->payments->first();
         $paymentMethod = $latestPayment && $latestPayment->teacher_id ? 'Efectivo' : 'Transferencia';
+        $receiptAmount = $fee->status === 'partial' && $latestPayment
+            ? (float) $latestPayment->amount_reported
+            : (float) $fee->amount;
+        $remainingAmount = max((float) $fee->amount - (float) $fee->paid_amount, 0);
 
         if (! $fee->receipt_number) {
             $fee->receipt_number = $this->generateReceiptNumber($fee->id);
@@ -39,6 +48,8 @@ class ReceiptController extends Controller
             'receiptNumber' => $receiptNumber,
             'paymentMethod' => $paymentMethod,
             'paidAt' => $fee->paid_at ?? $latestPayment?->paid_on_date,
+            'receiptAmount' => $receiptAmount,
+            'remainingAmount' => $remainingAmount,
             'logoJuvenilia' => public_path('IMG/logo_juvenilia.jpeg'),
             'logoDeporte' => public_path('IMG/logodepte.jpeg'),
         ]);

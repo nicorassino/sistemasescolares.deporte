@@ -16,15 +16,21 @@ class PaymentApprovedMail extends Mailable
     use Queueable, SerializesModels;
 
     public function __construct(
-        public Fee $fee
+        public Fee $fee,
+        public ?float $appliedAmount = null,
+        public ?float $remainingAmount = null
     ) {
         $this->fee->load(['student']);
     }
 
     public function envelope(): Envelope
     {
+        $isPartial = ($this->remainingAmount ?? 0) > 0;
+
         return new Envelope(
-            subject: 'Recibo de pago acreditado - Juvenilia',
+            subject: $isPartial
+                ? 'Pago parcial acreditado - Juvenilia'
+                : 'Recibo de pago acreditado - Juvenilia',
             replyTo: [
                 new Address('juvefutbol@institutojuvenilia.edu.ar', 'Escuela de Fútbol Instituto Juvenilia'),
             ],
@@ -41,7 +47,13 @@ class PaymentApprovedMail extends Mailable
 
         return new Content(
             view: 'emails.payment-approved',
-            with: ['receiptUrl' => $receiptUrl],
+            text: 'emails.payment-approved-text',
+            with: [
+                'receiptUrl' => $receiptUrl,
+                'appliedAmount' => $this->appliedAmount ?? (float) $this->fee->amount,
+                'remainingAmount' => $this->remainingAmount ?? 0,
+                'isPartial' => ($this->remainingAmount ?? 0) > 0,
+            ],
         );
     }
 }
